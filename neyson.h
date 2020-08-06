@@ -131,14 +131,20 @@ public:
     Function(Real, real) Function(Integer, integer) Function(bool, boolean);
 };
 
+enum class Mode
+{
+    Compact,
+    Readable,
+};
+
 namespace IO
 {
 Result read(Value &value, const char *str);
 Result read(Value &value, const std::string &str);
 
-std::string write(const Value &value);
-void write(const Value &value, std::ostream *stream);
-bool write(const Value &value, const std::string &path);
+std::string write(const Value &value, Mode mode = Mode::Compact);
+void write(const Value &value, std::ostream *stream, Mode mode = Mode::Compact);
+bool write(const Value &value, const std::string &path, Mode mode = Mode::Compact);
 }  // namespace IO
 }  // namespace Neyson
 
