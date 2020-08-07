@@ -16,11 +16,11 @@ option(NEYSON_BUILD_TESTS "Build Neyson Tests" ${NEYSON_MASTER})
 option(NEYSON_INSTALL_LIB "Install Neyson Library" ${NEYSON_MASTER})
 
 file(GLOB HEADERS
-    "${CMAKE_CURRENT_SOURCE_DIR}/neyson.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/neyson.h"
     "${CMAKE_CURRENT_BINARY_DIR}/config.h")
 file(GLOB SOURCES
-    "${CMAKE_CURRENT_SOURCE_DIR}/neyson.h"
-    "${CMAKE_CURRENT_SOURCE_DIR}/neyson.cpp")
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/neyson.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/neyson.cpp")
 
 add_library(neyson ${SOURCES})
 target_include_directories(neyson PUBLIC
@@ -28,7 +28,7 @@ target_include_directories(neyson PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/>
     $<INSTALL_INTERFACE:${CMAKE_INSTALL_PREFIX}/include/>)
 configure_file(
-    "${CMAKE_CURRENT_SOURCE_DIR}/config.h.in"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/config.h.in"
     "${CMAKE_CURRENT_BINARY_DIR}/config.h")
 
 if(NEYSON_INSTALL_LIB)
@@ -51,6 +51,6 @@ if(NEYSON_BUILD_TESTS)
     set(BUILD_GMOCK OFF CACHE BOOL "")
     set(INSTALL_GTEST OFF CACHE BOOL "")
     add_subdirectory(./googletest/)
-    add_executable(Tests tests.cpp)
+    add_executable(Tests "src/tests.cpp")
     target_link_libraries(Tests neyson gtest gtest_main)
 endif()
