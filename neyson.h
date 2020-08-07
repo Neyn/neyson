@@ -7,6 +7,8 @@
 #include <unordered_map>
 #include <vector>
 
+#include "config.h"
+
 #define Function(TYPE, FUNC)           \
     Value(TYPE &&val);                 \
     Value(const TYPE &val);            \

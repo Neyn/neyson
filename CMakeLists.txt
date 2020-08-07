@@ -11,18 +11,25 @@ endif()
 set(NEYSON_VERSION ${PROJECT_VERSION} CACHE INTERNAL "")
 set(NEYSON_INCLUDE_DIR "${CMAKE_CURRENT_LIST_DIR}" CACHE INTERNAL "")
 set(NEYSON_LIBRARIES "neyson" CACHE INTERNAL "")
-
 option(NEYSON_BUILD_LIB "Build Neyson Library" ON)
 option(NEYSON_BUILD_TESTS "Build Neyson Tests" ${NEYSON_MASTER})
 option(NEYSON_INSTALL_LIB "Install Neyson Library" ${NEYSON_MASTER})
 
 file(GLOB HEADERS
-    "${CMAKE_CURRENT_SOURCE_DIR}/neyson.h")
+    "${CMAKE_CURRENT_SOURCE_DIR}/neyson.h"
+    "${CMAKE_CURRENT_BINARY_DIR}/config.h")
 file(GLOB SOURCES
     "${CMAKE_CURRENT_SOURCE_DIR}/neyson.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/neyson.cpp")
 
 add_library(neyson ${SOURCES})
+target_include_directories(neyson PUBLIC
+    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/>
+    $<INSTALL_INTERFACE:${CMAKE_INSTALL_PREFIX}/include/>)
+configure_file(
+    "${CMAKE_CURRENT_SOURCE_DIR}/config.h.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/config.h")
 
 if(NEYSON_INSTALL_LIB)
     install(TARGETS neyson
