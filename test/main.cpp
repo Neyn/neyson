@@ -4,7 +4,7 @@
 #include <iostream>
 #include <random>
 
-#include "neyson.h"
+#include "neyson/neyson.h"
 
 #define Parse                                                  \
     R = IO::read(V, S);                                        \

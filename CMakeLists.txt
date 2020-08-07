@@ -9,27 +9,27 @@ if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
 endif()
 
 set(NEYSON_VERSION ${PROJECT_VERSION} CACHE INTERNAL "")
-set(NEYSON_INCLUDE_DIR "${CMAKE_CURRENT_LIST_DIR}" CACHE INTERNAL "")
+set(NEYSON_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src/" CACHE INTERNAL "")
 set(NEYSON_LIBRARIES "neyson" CACHE INTERNAL "")
 option(NEYSON_BUILD_LIB "Build Neyson Library" ON)
 option(NEYSON_BUILD_TESTS "Build Neyson Tests" ${NEYSON_MASTER})
 option(NEYSON_INSTALL_LIB "Install Neyson Library" ${NEYSON_MASTER})
 
 file(GLOB HEADERS
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/neyson.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/neyson/neyson.h"
     "${CMAKE_CURRENT_BINARY_DIR}/config.h")
 file(GLOB SOURCES
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/neyson.h"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/neyson.cpp")
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/neyson/neyson.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/neyson/neyson.cpp")
 
 if(NEYSON_BUILD_LIB)
     add_library(neyson ${SOURCES})
     target_include_directories(neyson PUBLIC
-        $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/>
         $<INSTALL_INTERFACE:${CMAKE_INSTALL_PREFIX}/include/>)
     configure_file(
-        "${CMAKE_CURRENT_SOURCE_DIR}/src/config.h.in"
+        "${CMAKE_CURRENT_SOURCE_DIR}/src/neyson/config.h.in"
         "${CMAKE_CURRENT_BINARY_DIR}/config.h")
 endif()
 
@@ -53,6 +53,6 @@ if(NEYSON_BUILD_TESTS)
     set(BUILD_GMOCK OFF CACHE BOOL "")
     set(INSTALL_GTEST OFF CACHE BOOL "")
     add_subdirectory(./googletest/)
-    add_executable(Tests "src/tests.cpp")
+    add_executable(Tests "test/main.cpp")
     target_link_libraries(Tests neyson gtest gtest_main)
 endif()
