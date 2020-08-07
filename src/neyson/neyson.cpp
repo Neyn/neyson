@@ -287,27 +287,11 @@ Error readNumber(Value &number, Parser &parser)
 Error readValue(Value &value, Parser &parser)
 {
     Skip(Error::ExpectedStart);
-    if (parser.ptr[0] == '{')
-    {
-        Object object;
-        auto error = readObject(object, parser);
-        value = std::move(object);
-        return error;
-    }
-    if (parser.ptr[0] == '[')
-    {
-        Array array;
-        auto error = readArray(array, parser);
-        value = std::move(array);
-        return error;
-    }
-    if (parser.ptr[0] == '\"')
-    {
-        String string;
-        auto error = readString(string, parser);
-        value = std::move(string);
-        return error;
-    }
+    if (parser.ptr[0] == '{') return readObject(value.object({}), parser);
+    if (parser.ptr[0] == '[') return readArray(value.array({}), parser);
+    if (parser.ptr[0] == '\"') return readString(value.string({}), parser);
+    if (strchr("-+.0123456789", parser.ptr[0]) != NULL) return readNumber(value, parser);
+
     if (strncmp(parser.ptr, "true", 4) == 0)
     {
         parser.ptr += 4;
@@ -326,7 +310,6 @@ Error readValue(Value &value, Parser &parser)
         value = Value();
         return Error::None;
     }
-    if (strchr("-+.0123456789", parser.ptr[0]) != NULL) return readNumber(value, parser);
     return Error::WrongStart;
 }
 
