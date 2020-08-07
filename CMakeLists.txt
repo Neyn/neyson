@@ -22,14 +22,16 @@ file(GLOB SOURCES
     "${CMAKE_CURRENT_SOURCE_DIR}/src/neyson.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/neyson.cpp")
 
-add_library(neyson ${SOURCES})
-target_include_directories(neyson PUBLIC
-    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/>
-    $<INSTALL_INTERFACE:${CMAKE_INSTALL_PREFIX}/include/>)
-configure_file(
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/config.h.in"
-    "${CMAKE_CURRENT_BINARY_DIR}/config.h")
+if(NEYSON_BUILD_LIB)
+    add_library(neyson ${SOURCES})
+    target_include_directories(neyson PUBLIC
+        $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/>
+        $<INSTALL_INTERFACE:${CMAKE_INSTALL_PREFIX}/include/>)
+    configure_file(
+        "${CMAKE_CURRENT_SOURCE_DIR}/src/config.h.in"
+        "${CMAKE_CURRENT_BINARY_DIR}/config.h")
+endif()
 
 if(NEYSON_INSTALL_LIB)
     install(TARGETS neyson
