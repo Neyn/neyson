@@ -330,22 +330,6 @@ Error readValue(Value &value, Parser &parser)
     return Error::WrongStart;
 }
 
-Result IO::read(Value &value, const char *str)
-{
-    value.reset();
-    Parser parser{str};
-    auto error = readValue(value, parser);
-    parser.ptr += strspn(parser.ptr, " \t\r\n");
-    return Result{error, size_t(parser.ptr - str)};
-}
-
-Result IO::read(Value &value, const std::string &str)
-{
-    auto result = read(value, str.c_str());
-    if (result.index != str.size()) result.error = Error::WrongEnd;
-    return result;
-}
-
 String unfixString(const String &string)
 {
     String output;
@@ -385,8 +369,6 @@ void writeReal(double number, std::ostream *stream)  //
     *stream << std::setprecision(16) << number;
 }
 
-namespace Compact
-{
 void writeValue(const Value &value, std::ostream *stream);
 
 void writeObject(const Object &object, std::ostream *stream)
@@ -433,10 +415,7 @@ void writeValue(const Value &value, std::ostream *stream)
     else
         Assert(false);
 }
-}  // namespace Compact
 
-namespace Readable
-{
 void writeValue(const Value &value, std::ostream *stream, size_t indent);
 
 void writeObject(const Object &object, std::ostream *stream, size_t indent)
@@ -497,14 +476,29 @@ void writeValue(const Value &value, std::ostream *stream, size_t indent)
     else
         Assert(false);
 }
-}  // namespace Readable
+
+Result IO::read(Value &value, const char *str)
+{
+    value.reset();
+    Parser parser{str};
+    auto error = readValue(value, parser);
+    parser.ptr += strspn(parser.ptr, " \t\r\n");
+    return Result{error, size_t(parser.ptr - str)};
+}
+
+Result IO::read(Value &value, const std::string &str)
+{
+    auto result = read(value, str.c_str());
+    if (result.index != str.size()) result.error = Error::WrongEnd;
+    return result;
+}
 
 void IO::write(const Value &value, std::ostream *stream, Mode mode)
 {
     if (mode == Mode::Readable)
-        Readable::writeValue(value, stream, 0);
+        writeValue(value, stream, 0);
     else
-        Compact::writeValue(value, stream);
+        writeValue(value, stream);
 }
 
 bool IO::write(const Value &value, const std::string &path, Mode mode)
