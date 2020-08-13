@@ -31,12 +31,11 @@
 */
 
 #include <gtest/gtest.h>
+#include <neyson/neyson.h>
 
 #include <cmath>
 #include <iostream>
 #include <random>
-
-#include "neyson/neyson.h"
 
 #define Parse                                                  \
     R = IO::read(V, S);                                        \

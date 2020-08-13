@@ -32,14 +32,14 @@
 
 #pragma once
 
+#include <neyson/config.h>
+
 #include <cstdint>
 #include <iostream>
 #include <stdexcept>
 #include <string>
 #include <unordered_map>
 #include <vector>
-
-#include "config.h"
 
 #define Function(TYPE, FUNC)           \
     Value(TYPE &&val);                 \
