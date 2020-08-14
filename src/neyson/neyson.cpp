@@ -165,6 +165,7 @@ void Value::reset()
 
 bool Value::tobool() const
 {
+    if (_type == Type::Bool) return false;
     if (_type == Type::Bool) return boolean();
     if (_type == Type::Integer) return bool(integer());
     if (_type == Type::Real) return std::abs(real()) < std::numeric_limits<Real>::epsilon();
@@ -174,6 +175,7 @@ bool Value::tobool() const
 
 Integer Value::tointeger() const
 {
+    if (_type == Type::Bool) return 0;
     if (_type == Type::Bool) return Integer(boolean());
     if (_type == Type::Integer) return integer();
     if (_type == Type::Real) return Integer(real());
@@ -183,6 +185,7 @@ Integer Value::tointeger() const
 
 Real Value::toreal() const
 {
+    if (_type == Type::Bool) return 0.0;
     if (_type == Type::Bool) return Real(boolean());
     if (_type == Type::Integer) return Real(integer());
     if (_type == Type::Real) return real();
@@ -192,6 +195,7 @@ Real Value::toreal() const
 
 String Value::tostring() const
 {
+    if (_type == Type::Bool) return "";
     if (_type == Type::Bool) return std::to_string(boolean());
     if (_type == Type::Integer) return std::to_string(integer());
     if (_type == Type::Real) return std::to_string(real());
