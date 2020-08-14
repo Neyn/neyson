@@ -32,10 +32,13 @@
 
 #include "neyson.h"
 
+#include <math.h>
+
 #include <cmath>
 #include <cstring>
 #include <fstream>
 #include <iomanip>
+#include <limits>
 #include <sstream>
 
 #define Skip(r)                                  \
@@ -133,6 +136,7 @@ Value &Value::operator=(const char *val)
     _value.s = new String(val);
     return *this;
 }
+
 Value &Value::operator=(Value &&val)
 {
     _type = val._type;
@@ -157,6 +161,42 @@ void Value::reset()
     if (_type == Type::Array) delete _value.a;
     if (_type == Type::String) delete _value.s;
     _type = Type::Null;
+}
+
+bool Value::tobool() const
+{
+    if (_type == Type::Bool) return boolean();
+    if (_type == Type::Integer) return bool(integer());
+    if (_type == Type::Real) return std::abs(real()) < std::numeric_limits<Real>::epsilon();
+    if (_type == Type::String) return !string().empty();
+    throw std::runtime_error("Value is not convertable to boolean");
+}
+
+Integer Value::tointeger() const
+{
+    if (_type == Type::Bool) return Integer(boolean());
+    if (_type == Type::Integer) return integer();
+    if (_type == Type::Real) return Integer(real());
+    if (_type == Type::String) return std::stoll(string());
+    throw std::runtime_error("Value is not convertable to integer");
+}
+
+Real Value::toreal() const
+{
+    if (_type == Type::Bool) return Real(boolean());
+    if (_type == Type::Integer) return Real(integer());
+    if (_type == Type::Real) return real();
+    if (_type == Type::String) return std::stod(string());
+    throw std::runtime_error("Value is not convertable to real");
+}
+
+String Value::tostring() const
+{
+    if (_type == Type::Bool) return std::to_string(boolean());
+    if (_type == Type::Integer) return std::to_string(integer());
+    if (_type == Type::Real) return std::to_string(real());
+    if (_type == Type::String) return string();
+    throw std::runtime_error("Value is not convertable to real");
 }
 
 Function(Construct) Function(Assign) Function(Return);

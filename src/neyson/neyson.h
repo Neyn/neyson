@@ -168,6 +168,19 @@ public:
         return *this;
     }
 
+    inline bool isnull() const { return _type == Type::Null; }
+    inline bool isboolean() const { return _type == Type::Bool; }
+    inline bool isinteger() const { return _type == Type::Integer; }
+    inline bool isreal() const { return _type == Type::Real; }
+    inline bool isstring() const { return _type == Type::String; }
+    inline bool isarrray() const { return _type == Type::Array; }
+    inline bool isobject() const { return _type == Type::Object; }
+
+    bool tobool() const;
+    Integer tointeger() const;
+    Real toreal() const;
+    String tostring() const;
+
     void reset();
     inline Type type() const { return _type; }
     Function(Object, object) Function(Array, array) Function(String, string);
