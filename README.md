@@ -7,7 +7,6 @@
   - [Data Types](#data-types)
   - [Reading](#reading)
   - [Writing](#writing)
-  - [Notes](#notes)
 - [Tests](#tests)
 - [Issues](#issues)
 - [License](#license)
@@ -45,7 +44,7 @@ In order to install the library:
 cmake --install .
 ```
 
-Alternatively you can use the project as a cmake subdirectory which is explained in the section below.
+Alternatively you can use the project as a CMake subdirectory which is explained in the section below.
 
 # Adding to CMake Project
 If you have installed the library you can add it to your CMake project like this:
@@ -109,9 +108,6 @@ Array array = {1, 1.1, 2};
 std::string data = IO::write(array, Mode::Readable);
 cout << data << endl;
 ```
-
-## Notes
-TODO put stuff here like how to use Value class.
 
 # Tests
 You don't need to run the tests in order to use the library but if you want to you can do this in project's directory:
