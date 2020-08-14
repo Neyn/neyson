@@ -106,6 +106,11 @@
 
 namespace Neyson
 {
+struct Parser
+{
+    const char *ptr;
+};
+
 Value::Value(const char *val)
 {
     _type = Type::String;

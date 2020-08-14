@@ -51,8 +51,10 @@
     TYPE &FUNC();                      \
     const TYPE &FUNC() const;
 
+/// The main namespace of the library.
 namespace Neyson
 {
+/// Error code that is in the Result class and is returned by IO::read() function.
 enum class Error
 {
     None,
@@ -73,6 +75,7 @@ enum class Error
     ExpectedCommaOrBracketClose,
 };
 
+/// Type of the Value returned by Value::type() function.
 enum class Type
 {
     Object,
@@ -84,11 +87,7 @@ enum class Type
     Null
 };
 
-struct Parser
-{
-    const char *ptr;
-};
-
+/// Result of parsing a json document returned by IO::read() function.
 struct Result
 {
     Error error;
@@ -97,12 +96,22 @@ struct Result
 };
 
 class Value;
+/// Floating-point json number that is used in this library.
 using Real = double;
+
+/// Integer json number that is used in this library.
 using Integer = int64_t;
+
+/// Json string that is used in this library.
 using String = std::string;
+
+/// Json array that is used in this library.
 using Array = std::vector<Value>;
+
+/// Json object that is used in this library.
 using Object = std::unordered_map<String, Value>;
 
+/// Value class that can hold any of the json types.
 class Value
 {
     union Variant
@@ -165,19 +174,29 @@ public:
     Function(Real, real) Function(Integer, integer) Function(bool, boolean);
 };
 
+/// Writing mode of the IO::write() function.
 enum class Mode
 {
     Compact,
     Readable,
 };
 
+/// Namespace that contains IO operation which are reading and writing.
 namespace IO
 {
+/// Reader function that reads the string into value.
 Result read(Value &value, const char *str);
+
+/// Reader function that reads the string into value.
 Result read(Value &value, const std::string &str);
 
+/// Writer function that writes value to a string and returns it.
 std::string write(const Value &value, Mode mode = Mode::Compact);
+
+/// Writer function that writes value to the given stream.
 void write(const Value &value, std::ostream *stream, Mode mode = Mode::Compact);
+
+/// Writer function that writes value to the given file path and returns success or failure.
 bool write(const Value &value, const std::string &path, Mode mode = Mode::Compact);
 }  // namespace IO
 }  // namespace Neyson

@@ -49,6 +49,9 @@ option(NEYSON_BUILD_LIB "Build Neyson Library" ON)
 option(NEYSON_BUILD_TESTS "Build Neyson Tests" ${NEYSON_MASTER})
 option(NEYSON_INSTALL_LIB "Install Neyson Library" ${NEYSON_MASTER})
 
+configure_file(
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/neyson/config.h.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/gen/neyson/config.h")
 file(GLOB HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/src/neyson/neyson.h"
     "${CMAKE_CURRENT_BINARY_DIR}/gen/neyson/config.h")
@@ -62,9 +65,6 @@ if(NEYSON_BUILD_LIB)
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/gen/>
         $<INSTALL_INTERFACE:${CMAKE_INSTALL_PREFIX}/include/>)
-    configure_file(
-        "${CMAKE_CURRENT_SOURCE_DIR}/src/neyson/config.h.in"
-        "${CMAKE_CURRENT_BINARY_DIR}/gen/neyson/config.h")
 endif()
 
 if(NEYSON_INSTALL_LIB)
