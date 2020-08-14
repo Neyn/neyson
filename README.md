@@ -41,10 +41,10 @@ you can change the install directory by changing the value of ```CMAKE_INSTALL_P
 In order to install the library:
 
 ``` shell
-cmake --install .
+sudo cmake --install .
 ```
 
-Alternatively you can use the project as a CMake subdirectory which is explained in the section below.
+```sudo``` might be needed or not depending on the install destination. Alternatively you can use the project as a CMake subdirectory which is explained in the section below.
 
 # Adding to CMake Project
 If you have installed the library you can add it to your CMake project like this:
