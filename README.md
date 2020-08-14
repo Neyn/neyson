@@ -143,7 +143,8 @@ You can set a value to null by:
 
 ``` c++
 Value value = 10;
-value = Value(); // set to null
+value.reset(); // set to null
+value = Value(); // another way to set to null
 ```
 
 # Tests
