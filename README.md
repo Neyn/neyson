@@ -7,6 +7,7 @@
   - [Data Types](#data-types)
   - [Reading](#reading)
   - [Writing](#writing)
+  - [Value Class](#value-class)
 - [Tests](#tests)
 - [Issues](#issues)
 - [License](#license)
@@ -86,16 +87,24 @@ In order to parse a json document you can use ```Neyson::IO::read``` function wh
 
 ``` c++
 using namespace Neyson;
-auto data = "[1, 1.1, 2]";
+const char *data = "{\"id\":1, \"name\":\"Alex\", \"value\":0.2}";
 
-Value json;
-auto result = IO::read(json, data);
+Value document;
+auto result = IO::read(document, data);
 assert(result);
 
-auto array = json.array();
-Integer first = array[0].integer();
-Real second = array[1].real();
-Integer third = array[2].integer();
+Object object = document.object();
+cout << object["id"].integer() << endl;
+cout << object["name"].string() << endl;
+cout << object["value"].real() << endl;
+```
+
+Output:
+
+```
+1
+Alex
+0.2
 ```
 
 ## Writing
@@ -104,9 +113,37 @@ You can serialize a json value into a string or a file or a custom stream. This 
 ``` c++
 using namespace Neyson;
 
-Array array = {1, 1.1, 2};
-std::string data = IO::write(array, Mode::Readable);
-cout << data << endl;
+Object object;
+object["id"] = 1;
+object["name"] = "Alex";
+object["value"] = 0.2;
+
+cout << IO::write(object) << endl;
+```
+
+Output:
+
+```
+{"value":0.2,"name":"Alex","id":1}
+```
+
+## Value Class
+The method for setting and getting types to values are similar so here is an example for integer type:
+
+``` c++
+Value value; // is null here
+value = 10; // set to 10
+value.integer(10); // another way to set to 10
+Integer integer = value.integer(); // get value
+bool isinteger = value.isinteger(); // is the value integer?
+Real real = value.toreal(); // get value of other type
+```
+
+You can set a value to null by:
+
+``` c++
+Value value = 10;
+value = Value(); // set to null
 ```
 
 # Tests
