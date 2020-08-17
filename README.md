@@ -68,7 +68,7 @@ target_include_directories(myexec PUBLIC ${NEYSON_INCLUDE_DIR})
 Please note that these are examples and you might want to change some stuff like the path given to ```add_subdirectory```.
 
 # Usage
-The API of this library is in namespace ```Neyson``` and you can access them by including ```#include <neyson/neyson.h>``` in your code.
+The API of this library is in namespace ```Neyson``` and you can access them by including ```#include <neyson/neyson.h>``` in your code. Please note that this library only handles UTF-8 strings.
 
 ## Data Types
 The data types that this library provides are:
