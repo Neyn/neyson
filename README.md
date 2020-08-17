@@ -118,13 +118,17 @@ object["id"] = 1;
 object["name"] = "Alex";
 object["value"] = 0.2;
 
-cout << IO::write(object) << endl;
+cout << IO::write(object, Mode::Readable) << endl;
 ```
 
 Output:
 
 ```
-{"value":0.2,"name":"Alex","id":1}
+{
+    "value": 0.2,
+    "name": "Alex",
+    "id": 1
+}
 ```
 
 ## Value Class
@@ -160,5 +164,4 @@ cmake --build .
 You can report bugs, ask questions and request features on [issues page](../../issues).
 
 # License
-This library is licensed under BSD 3-Clause permissive license. You can read it [here](LICENSE.md).
-
+This library is licensed under BSD 3-Clause permissive license. You can read it [here](LICENSE).
