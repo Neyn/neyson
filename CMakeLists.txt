@@ -82,14 +82,6 @@ if(NEYSON_INSTALL_LIB)
 endif()
 
 if(NEYSON_BUILD_TESTS)
-    if(WIN32)
-        set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
-    endif(WIN32)
-
-    set(BUILD_GMOCK OFF CACHE BOOL "")
-    set(INSTALL_GTEST OFF CACHE BOOL "")
-
-    add_subdirectory(./googletest/)
-    add_executable(Tests "test/main.cpp")
-    target_link_libraries(Tests neyson gtest gtest_main)
+    add_executable(tests "test/main.cpp")
+    target_link_libraries(tests neyson)
 endif()
