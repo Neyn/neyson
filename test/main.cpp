@@ -30,22 +30,61 @@
   OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <gtest/gtest.h>
 #include <neyson/neyson.h>
 
 #include <cmath>
 #include <iostream>
 #include <random>
 
+#define CLEAR "\033[0m"
+#define RED "\033[31m"
+#define GREEN "\033[32m"
+#define SEPARATOR "--------------------" << endl
+
+#define CHECK(expr)                                                                                          \
+    if (!static_cast<bool>(expr))                                                                            \
+    {                                                                                                        \
+        cout << RED << "\"" << #expr << "\" Failed at Line " << to_string(__LINE__) << "!" << CLEAR << endl; \
+        throw 0;                                                                                             \
+    }
+
+#define NTHROW(expr)                                                                                         \
+    try                                                                                                      \
+    {                                                                                                        \
+        expr;                                                                                                \
+    }                                                                                                        \
+    catch (...)                                                                                              \
+    {                                                                                                        \
+        cout << RED << "\"" << #expr << "\" Failed at Line " << to_string(__LINE__) << "!" << CLEAR << endl; \
+        throw 0;                                                                                             \
+    }
+
+#define TEST(name)                                                                      \
+    void name##Test_();                                                                 \
+    void name##Test()                                                                   \
+    {                                                                                   \
+        cout << #name << " Test Started..." << endl;                                    \
+        try                                                                             \
+        {                                                                               \
+            name##Test_();                                                              \
+            cout << GREEN << #name << " Test succeeded!" << CLEAR << endl << SEPARATOR; \
+        }                                                                               \
+        catch (...)                                                                     \
+        {                                                                               \
+            cout << RED << #name << " Test Failed!" << CLEAR << endl << SEPARATOR;      \
+        }                                                                               \
+    }                                                                                   \
+    void name##Test_()
+
 #define Parse                                                  \
     R = IO::read(V, S);                                        \
     if (!R) cout << "Error: " << Errors[int(R.error)] << endl; \
-    EXPECT_TRUE(R);                                            \
-    if (R) EXPECT_NO_THROW(Checker::check(V, E));
+    CHECK(R);                                                  \
+    if (R) NTHROW(Checker::check(V, E));
 
 #define Deparse       \
     O = IO::write(E); \
-    EXPECT_EQ(S, O);
+    CHECK(S == O);
 
 using namespace std;
 using namespace Neyson;
@@ -162,68 +201,68 @@ Value random()
 }
 }  // namespace Random
 
-TEST(Neyson, Value)
+TEST(Value)
 {
     Value value;
-    EXPECT_EQ(value.type(), Type::Null);
+    CHECK(value.type() == Type::Null);
 
     value.reset();
-    EXPECT_EQ(value.type(), Type::Null);
+    CHECK(value.type() == Type::Null);
 
     value = false;
-    EXPECT_EQ(value.type(), Type::Bool);
-    EXPECT_EQ(value.boolean(), false);
+    CHECK(value.type() == Type::Bool);
+    CHECK(value.boolean() == false);
 
     value = int8_t(10);
-    EXPECT_EQ(value.type(), Type::Integer);
-    EXPECT_EQ(value.integer(), 10);
+    CHECK(value.type() == Type::Integer);
+    CHECK(value.integer() == 10);
 
     value = int16_t(10);
-    EXPECT_EQ(value.type(), Type::Integer);
-    EXPECT_EQ(value.integer(), 10);
+    CHECK(value.type() == Type::Integer);
+    CHECK(value.integer() == 10);
 
     value = int32_t(10);
-    EXPECT_EQ(value.type(), Type::Integer);
-    EXPECT_EQ(value.integer(), 10);
+    CHECK(value.type() == Type::Integer);
+    CHECK(value.integer() == 10);
 
     value = int64_t(10);
-    EXPECT_EQ(value.type(), Type::Integer);
-    EXPECT_EQ(value.integer(), 10);
+    CHECK(value.type() == Type::Integer);
+    CHECK(value.integer() == 10);
 
     value = uint8_t(10);
-    EXPECT_EQ(value.type(), Type::Integer);
-    EXPECT_EQ(value.integer(), 10);
+    CHECK(value.type() == Type::Integer);
+    CHECK(value.integer() == 10);
 
     value = uint16_t(10);
-    EXPECT_EQ(value.type(), Type::Integer);
-    EXPECT_EQ(value.integer(), 10);
+    CHECK(value.type() == Type::Integer);
+    CHECK(value.integer() == 10);
 
     value = uint32_t(10);
-    EXPECT_EQ(value.type(), Type::Integer);
-    EXPECT_EQ(value.integer(), 10);
+    CHECK(value.type() == Type::Integer);
+    CHECK(value.integer() == 10);
 
     value = uint64_t(10);
-    EXPECT_EQ(value.type(), Type::Integer);
-    EXPECT_EQ(value.integer(), 10);
+    CHECK(value.type() == Type::Integer);
+    CHECK(value.integer() == 10);
 
     value = .01;
-    EXPECT_EQ(value.type(), Type::Real);
-    EXPECT_EQ(value.real(), .01);
+    CHECK(value.type() == Type::Real);
+    CHECK(value.real() == .01);
 
     value = .01f;
-    EXPECT_EQ(value.type(), Type::Real);
-    EXPECT_EQ(value.real(), .01f);
+    CHECK(value.type() == Type::Real);
+    CHECK(value.real() == .01f);
 
     value.reset();
-    EXPECT_EQ(value.type(), Type::Null);
+    CHECK(value.type() == Type::Null);
 
     value = 10;
     Value value1 = std::move(value);
-    EXPECT_EQ(value.type(), Type::Null);
-    EXPECT_EQ(value1.type(), Type::Integer);
+    CHECK(value.type() == Type::Null);
+    CHECK(value1.type() == Type::Integer);
 }
 
-TEST(Neyson, Read)
+TEST(Read)
 {
     Result R;
     Value V, E;
@@ -290,7 +329,7 @@ TEST(Neyson, Read)
     Parse;
 }
 
-TEST(Neyson, Write)
+TEST(Write)
 {
     Value E;
     std::string S, O;
@@ -344,7 +383,7 @@ TEST(Neyson, Write)
     Deparse;
 }
 
-TEST(Neyson, Random)
+TEST(Random)
 {
     for (size_t i = 0; i < 1000; ++i)
     {
@@ -364,9 +403,13 @@ TEST(Neyson, Random)
     }
 }
 
-int main(int argc, char **argv)
+int main()
 {
     srand(static_cast<unsigned int>(time(nullptr)));
-    ::testing::InitGoogleTest(&argc, argv);
-    return RUN_ALL_TESTS();
+    cout << SEPARATOR << "Running Tests..." << endl << SEPARATOR;
+    ValueTest();
+    ReadTest();
+    WriteTest();
+    RandomTest();
+    cout << "Tests Done!" << endl << SEPARATOR;
 }
