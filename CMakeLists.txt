@@ -60,9 +60,9 @@ file(GLOB SOURCES
 if(NEYSON_BUILD_LIB)
     add_library(neyson ${SOURCES})
     target_include_directories(neyson PUBLIC
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/>
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/gen/>
-        $<INSTALL_INTERFACE:${CMAKE_INSTALL_PREFIX}/include/>)
+        "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/>"
+        "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/gen/>"
+        "$<INSTALL_INTERFACE:${CMAKE_INSTALL_PREFIX}/include/>")
 endif()
 
 if(NEYSON_INSTALL_LIB)
@@ -78,7 +78,7 @@ if(NEYSON_INSTALL_LIB)
         DESTINATION lib/cmake/neyson)
     export(TARGETS neyson
         NAMESPACE neyson::
-        FILE ${PROJECT_BINARY_DIR}/neysonConfig.cmake)
+        FILE "${PROJECT_BINARY_DIR}/neysonConfig.cmake")
 endif()
 
 if(NEYSON_BUILD_TESTS)
