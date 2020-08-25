@@ -33,6 +33,7 @@
 #include <neyson/neyson.h>
 
 #include <cmath>
+#include <ctime>
 #include <iostream>
 #include <random>
 
