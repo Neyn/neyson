@@ -160,8 +160,8 @@ cmake --build .
 ./Tests
 ```
 
-# Issues
-You can report bugs, ask questions and request features on [issues page](../../issues).
+# Contributing
+You can report bugs, ask questions and request features on [issues page](../../issues) but please don't send pull requests (they will be closed).
 
 # License
 This library is licensed under BSD 3-Clause permissive license. You can read it [here](LICENSE).
