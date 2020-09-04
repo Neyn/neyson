@@ -2,24 +2,24 @@
 - [Table of Contents](#table-of-contents)
 - [Neyson](#neyson)
 - [Build & Install](#build--install)
-- [Adding to CMake Project](#adding-to-cmake-project)
+- [CMake Submodule](#cmake-submodule)
 - [Usage](#usage)
   - [Data Types](#data-types)
   - [Reading](#reading)
   - [Writing](#writing)
   - [Value Class](#value-class)
 - [Tests](#tests)
-- [Issues](#issues)
+- [Contributing](#contributing)
 - [License](#license)
 
 # Neyson
-Neyson is a lightweight C++11 json library which is compliant with [RFC 8259](https://tools.ietf.org/html/rfc8259) and very easy to use. 
+Neyson is a lightweight C++11 json library which is compliant with [RFC 8259 specification](https://tools.ietf.org/html/rfc8259) and very easy to use.
 
 # Build & Install
 If you want to install the library you can clone the project by:
 
 ``` shell
-git clone --recursive https://github.com/Neyn/neyson.git
+git clone https://github.com/Neyn/neyson.git
 ```
 
 Then go into the project directory and create build directory:
@@ -47,7 +47,7 @@ sudo cmake --install .
 
 ```sudo``` might be needed or not depending on the install destination. Alternatively you can use the project as a CMake subdirectory which is explained in the section below.
 
-# Adding to CMake Project
+# CMake Submodule
 If you have installed the library you can add it to your CMake project like this:
 
 ``` cmake
@@ -62,13 +62,13 @@ Or if you prefer to use the library as a subdirectory you can add it to your CMa
 add_subdirectory(neyson)
 add_executable(myexec main.cpp)
 target_link_libraries(myexec ${NEYSON_LIBRARIES})
-target_include_directories(myexec PUBLIC ${NEYSON_INCLUDE_DIR})
+target_include_directories(myexec PUBLIC ${NEYSON_INCLUDE_DIRS})
 ```
 
 Please note that these are examples and you might want to change some stuff like the path given to ```add_subdirectory```.
 
 # Usage
-The API of this library is in namespace ```Neyson``` and you can access them by including ```#include <neyson/neyson.h>``` in your code. Please note that this library only handles UTF-8 strings.
+The API of this library is in namespace ```Neyson``` and you can access them by including ```#include <neyson/neyson.h>``` in your code. Please note that this library only handles UTF-8 strings so strings given to the library must be convert to UTF-8 if they are not(perhaps with ```std::codecvt```).
 
 ## Data Types
 The data types that this library provides are:
@@ -80,7 +80,7 @@ The data types that this library provides are:
 + ```Neyson::Integer``` which is the integer type that holds an integer json number (which is int64_t).
 + ```Neyson::Real``` which is the floating-point type that holds an floating-point json number (which is double).
 
-Some of the types above are typedefs of C++ containers and types but they might change in future so in order for the code to be compatible use these types instead.
+Some of the types above are ```typedef```'s of C++ containers and types but they might change in future so in order for the code to be compatible use these types instead.
 
 ## Reading
 In order to parse a json document you can use ```Neyson::IO::read``` function which takes a ```Neyson::Value``` and a ```std::string``` or a ```const char *``` and reads the string into the given value and returns ```Neyson::Result``` class which contains the error code and size of bytes read from the string. Note that if you give ```std::string``` as input to this function and the parser doesn't reach the end of the string the result will have ```Neyson::Error::WrongEnd``` error code. Here is an example of reading a json document:
