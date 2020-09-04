@@ -155,6 +155,7 @@ value = Value(); // another way to set to null
 You don't need to run the tests in order to use the library but if you want to you can do this in project's directory:
 
 ``` shell
+mkdir build && cd build
 cmake -DNEYSON_BUILD_TESTS=ON ..
 cmake --build .
 ./Tests
