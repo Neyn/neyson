@@ -162,7 +162,7 @@ cmake --build .
 ```
 
 # Contributing
-You can report bugs, ask questions and request features on [issues page](../../issues) but please don't send pull requests (they will be closed).
+You can report bugs, ask questions and request features on [issues page](../../issues). Pull requests are not accepted right now.
 
 # License
 This library is licensed under BSD 3-Clause permissive license. You can read it [here](LICENSE).
