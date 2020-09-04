@@ -72,6 +72,7 @@
         }                                                                               \
         catch (...)                                                                     \
         {                                                                               \
+            Code = 1;                                                                   \
             cout << RED << #name << " Test Failed!" << CLEAR << endl << SEPARATOR;      \
         }                                                                               \
     }                                                                                   \
@@ -89,6 +90,8 @@
 
 using namespace std;
 using namespace Neyson;
+
+int Code = 0;
 
 vector<string> Errors = {
     "None",
@@ -413,4 +416,5 @@ int main()
     WriteTest();
     RandomTest();
     cout << "Tests Done!" << endl << SEPARATOR;
+    return Code;
 }
