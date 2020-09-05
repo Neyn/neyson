@@ -62,6 +62,8 @@ enum class Error
     WrongNumber,
     WrongString,
     WrongStart,
+    WrongValue,
+    FailedFileIO,
     ExpectedColon,
     ExpectedComma,
     ExpectedStart,
@@ -96,6 +98,7 @@ struct Result
 };
 
 class Value;
+
 /// Floating-point json number that is used in this library.
 using Real = double;
 
@@ -130,9 +133,11 @@ class Value
 public:
     Value();
     ~Value();
+
     Value(Value &&val);
     Value(const Value &val);
     Value(const char *val);
+
     Value &operator=(Value &&val);
     Value &operator=(const Value &val);
     Value &operator=(const char *val);
@@ -151,6 +156,7 @@ public:
             _value.r = Real(val);
         }
     }
+
     template <typename T, typename = typename std::enable_if<std::is_arithmetic<T>::value>::type>
     Value &operator=(const T &val)
     {
@@ -203,14 +209,17 @@ Result read(Value &value, const char *str);
 /// Reader function that reads the string into value.
 Result read(Value &value, const std::string &str);
 
+/// Reader function that reads the file into value.
+Result fread(Value &value, const std::string &path);
+
 /// Writer function that writes value to a string and returns it.
-std::string write(const Value &value, Mode mode = Mode::Compact);
+Result write(const Value &value, std::string &data, Mode mode = Mode::Compact);
 
 /// Writer function that writes value to the given stream.
-void write(const Value &value, std::ostream *stream, Mode mode = Mode::Compact);
+Result write(const Value &value, std::ostream *stream, Mode mode = Mode::Compact);
 
 /// Writer function that writes value to the given file path and returns success or failure.
-bool write(const Value &value, const std::string &path, Mode mode = Mode::Compact);
+Result fwrite(const Value &value, const std::string &path, Mode mode = Mode::Compact);
 }  // namespace IO
 }  // namespace Neyson
 

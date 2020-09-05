@@ -78,14 +78,14 @@
     }                                                                                   \
     void name##Test_()
 
-#define Parse                                                  \
-    R = IO::read(V, S);                                        \
-    if (!R) cout << "Error: " << Errors[int(R.error)] << endl; \
-    CHECK(R);                                                  \
+#define Parse           \
+    R = IO::read(V, S); \
+    CHECK(R);           \
     if (R) NTHROW(Checker::check(V, E));
 
-#define Deparse       \
-    O = IO::write(E); \
+#define Deparse          \
+    R = IO::write(E, O); \
+    CHECK(R);            \
     CHECK(S == O);
 
 using namespace std;
@@ -93,60 +93,37 @@ using namespace Neyson;
 
 int Code = 0;
 
-vector<string> Errors = {
-    "None",
-    "WrongEnd",
-    "WrongNumber",
-    "WrongString",
-    "WrongStart",
-    "ExpectedColon",
-    "ExpectedComma",
-    "ExpectedStart",
-    "ExpectedQuoteOpen",
-    "ExpectedQuoteClose",
-    "ExpectedBraceOpen",
-    "ExpectedBraceClose",
-    "ExpectedBracketOpen",
-    "ExpectedBracketClose",
-    "ExpectedCommaOrBraceClose",
-    "ExpectedCommaOrBracketClose",
-};
-vector<string> Types = {"Object", "Array", "String", "Real", "Integer", "Bool", "Null"};
-
 namespace Checker
 {
 void checkValue(const Value &value1, const Value &value2);
 
 void checkArray(const Array &array1, const Array &array2)
 {
-    if (array1.size() != array2.size()) throw 0;
+    CHECK(array1.size() == array2.size());
     for (size_t i = 0; i < array1.size(); ++i) checkValue(array1[i], array2[i]);
 }
 
 void checkObject(const Object &object1, const Object &object2)
 {
-    if (object1.size() != object2.size()) throw 0;
+    CHECK(object1.size() == object2.size());
     for (const auto &pair : object1)
     {
         auto it = object2.find(pair.first);
-        if (it == object2.end()) throw 0;
+        CHECK(it != object2.end());
         checkValue(pair.second, it->second);
     }
 }
 
 void checkValue(const Value &value1, const Value &value2)
 {
-    if (value1.type() != value2.type())
-        cout << "Type: " << Types[int(value1.type())] << " " << Types[int(value2.type())] << endl;
-
     auto type = value1.type();
-    if (value1.type() != value2.type()) throw 0;
+    CHECK(value1.type() == value2.type());
     if (type == Type::Object) checkObject(value1.object(), value2.object());
     if (type == Type::Array) checkArray(value1.array(), value2.array());
-    if (type == Type::String && value1.string() != value2.string()) throw 0;
-    if (type == Type::Real && abs(value1.real() - value2.real()) > std::numeric_limits<Real>::epsilon()) throw 0;
-    if (type == Type::Integer && value1.integer() != value2.integer()) throw 0;
-    if (type == Type::Bool && value1.boolean() != value2.boolean()) throw 0;
+    if (type == Type::String) CHECK(value1.string() == value2.string());
+    if (type == Type::Real) CHECK(abs(value1.real() - value2.real()) <= std::numeric_limits<Real>::epsilon());
+    if (type == Type::Integer) CHECK(value1.integer() == value2.integer());
+    if (type == Type::Bool) CHECK(value1.boolean() == value2.boolean());
 }
 
 void check(const Value &value1, const Value &value2) { checkValue(value1, value2); }
@@ -270,7 +247,7 @@ TEST(Read)
 {
     Result R;
     Value V, E;
-    std::string S;
+    std::string S, O;
 
     S = "0";
     E = 0;
@@ -335,7 +312,8 @@ TEST(Read)
 
 TEST(Write)
 {
-    Value E;
+    Result R;
+    Value V, E;
     std::string S, O;
 
     S = "0";
@@ -387,23 +365,47 @@ TEST(Write)
     Deparse;
 }
 
+TEST(Unicode)
+{
+    Result R;
+    Value V, E;
+    std::string S, O;
+
+    S = "\"\\u2606\"";
+    E = "☆";
+    Parse;
+
+    S = "\"\\u273A\\u2606\"";
+    E = "✺☆";
+    Parse;
+
+    S = "\"|\\u272B|\\u2606|\\u2732|\"";
+    E = "|✫|☆|✲|";
+    Parse;
+
+    S = "\"☆\"";
+    E = "☆";
+    Deparse;
+
+    S = "\"✺☆\"";
+    E = "✺☆";
+    Deparse;
+
+    S = "\"|✫|☆|✲|\"";
+    E = "|✫|☆|✲|";
+    Deparse;
+}
+
 TEST(Random)
 {
     for (size_t i = 0; i < 1000; ++i)
     {
         Result R;
+        String S;
         Value V, E = Random::random();
-        auto S = IO::write(E);
+        R = IO::write(E, S);
+        CHECK(R);
         Parse;
-
-        if (false)
-        {
-            for (size_t i = 0; i < 80; ++i) cout << '-';
-            cout << endl;
-            cout << S << endl;
-            for (size_t i = 0; i < 80; ++i) cout << '-';
-            cout << endl;
-        }
     }
 }
 
@@ -414,6 +416,7 @@ int main()
     ValueTest();
     ReadTest();
     WriteTest();
+    UnicodeTest();
     RandomTest();
     cout << "Tests Done!" << endl << SEPARATOR;
     return Code;

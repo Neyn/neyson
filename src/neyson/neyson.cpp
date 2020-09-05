@@ -32,14 +32,16 @@
 
 #include "neyson.h"
 
-#include <math.h>
-
 #include <cmath>
+#include <cstdio>
 #include <cstring>
 #include <fstream>
 #include <iomanip>
 #include <limits>
 #include <sstream>
+
+// TODO remove
+#include <bitset>
 
 #define Skip(r)                                  \
     parser.ptr += strspn(parser.ptr, " \t\r\n"); \
@@ -393,108 +395,140 @@ Error readValue(Value &value, Parser &parser)
     return Error::WrongStart;
 }
 
-String unfixString(const String &string)
+Error unfixString(String &string)
 {
     String output;
     output.reserve(string.size());
     for (size_t i = 0; i < string.size(); ++i)
     {
-        output.push_back('\\');
-        if (string[i] == '\"')
-            output.push_back('\"');
-        else if (string[i] == '\\')
-            output.push_back('\\');
-        else if (string[i] == '/')
-            output.push_back('/');
-        else if (string[i] == '\b')
-            output.push_back('b');
-        else if (string[i] == '\f')
-            output.push_back('f');
-        else if (string[i] == '\n')
-            output.push_back('n');
-        else if (string[i] == '\r')
-            output.push_back('r');
-        else if (string[i] == '\t')
-            output.push_back('t');
+        if ((string[i] & 0xF8) == 0xF0)
+        {
+            if (i + 4 > string.size()) return Error::WrongString;
+            output.append(string.data() + i, 4);
+            i += 3;
+        }
+        else if ((string[i] & 0xF0) == 0xE0)
+        {
+            if (i + 3 > string.size()) return Error::WrongString;
+            output.append(string.data() + i, 3);
+            i += 2;
+        }
+        else if ((string[i] & 0xE0) == 0xC0)
+        {
+            if (i + 2 > string.size()) return Error::WrongString;
+            output.append(string.data() + i, 2);
+            i += 1;
+        }
+
         else if (string[i] < 10)
-            output.append("u000").push_back('0' + string[i]);
+            output.append("\\u000").push_back('0' + string[i]);
         else if (string[i] < 16)
-            output.append("u000").push_back('A' + string[i] - 10);
+            output.append("\\u000").push_back('A' + string[i] - 10);
         else if (string[i] < 26)
-            output.append("u001").push_back('0' + string[i] - 16);
+            output.append("\\u001").push_back('0' + string[i] - 16);
         else if (string[i] < 32)
-            output.append("u001").push_back('A' + string[i] - 26);
+            output.append("\\u001").push_back('A' + string[i] - 26);
+
+        else if (string[i] == '\"')
+            output.append("\\\"");
+        else if (string[i] == '\\')
+            output.append("\\\\");
+        else if (string[i] == '/')
+            output.append("\\/");
+        else if (string[i] == '\b')
+            output.append("\\b");
+        else if (string[i] == '\f')
+            output.append("\\f");
+        else if (string[i] == '\n')
+            output.append("\\n");
+        else if (string[i] == '\r')
+            output.append("\\r");
+        else if (string[i] == '\t')
+            output.append("\\t");
         else
-            output.back() = string[i];
+            output.push_back(string[i]);
     }
-    return output;
+
+    string = output;
+    return Error::None;
 }
 
-void writeString(const String &string, std::ostream *stream)  //
+Error writeString(String string, std::ostream *stream)
 {
-    *stream << '\"' << unfixString(string) << '\"';
+    auto error = unfixString(string);
+    if (error != Error::None) return error;
+    *stream << '\"' << string << '\"';
+    return Error::None;
 }
 
-void writeReal(double number, std::ostream *stream)  //
+Error writeReal(double number, std::ostream *stream)
 {
+    if (std::isnan(number)) return Error::WrongNumber;
     *stream << std::setprecision(16) << number;
+    return Error::None;
 }
 
-void writeValue(const Value &value, std::ostream *stream);
+Error writeValue(const Value &value, std::ostream *stream);
 
-void writeObject(const Object &object, std::ostream *stream)
+Error writeObject(const Object &object, std::ostream *stream)
 {
     size_t i = 0;
     *stream << '{';
     for (const auto &pair : object)
     {
         if (i++ != 0) *stream << ',';
-        writeString(pair.first, stream);
+        auto error = writeString(pair.first, stream);
+        if (error != Error::None) return error;
+
         *stream << ':';
-        writeValue(pair.second, stream);
+        error = writeValue(pair.second, stream);
+        if (error != Error::None) return error;
     }
+
     *stream << '}';
+    return Error::None;
 }
 
-void writeArray(const Array &array, std::ostream *stream)
+Error writeArray(const Array &array, std::ostream *stream)
 {
     *stream << '[';
     for (size_t i = 0; i < array.size(); ++i)
     {
         if (i != 0) *stream << ',';
-        writeValue(array[i], stream);
+        auto error = writeValue(array[i], stream);
+        if (error != Error::None) return error;
     }
+
     *stream << ']';
+    return Error::None;
 }
 
-void writeValue(const Value &value, std::ostream *stream)
+Error writeValue(const Value &value, std::ostream *stream)
 {
-    if (value.type() == Type::Object)
-        writeObject(value.object(), stream);
-    else if (value.type() == Type::Array)
-        writeArray(value.array(), stream);
-    else if (value.type() == Type::String)
-        writeString(value.string(), stream);
-    else if (value.type() == Type::Real)
-        writeReal(value.real(), stream);
-    else if (value.type() == Type::Integer)
+    if (value.type() == Type::Object) return writeObject(value.object(), stream);
+    if (value.type() == Type::Array) return writeArray(value.array(), stream);
+    if (value.type() == Type::String) return writeString(value.string(), stream);
+    if (value.type() == Type::Real) return writeReal(value.real(), stream);
+
+    if (value.type() == Type::Integer)
         *stream << value.integer();
     else if (value.type() == Type::Bool)
         *stream << (value.boolean() ? "true" : "false");
     else if (value.type() == Type::Null)
         *stream << "null";
     else
-        Assert(false);
+        return Error::WrongValue;
+    return Error::None;
 }
 
-void writeValue(const Value &value, std::ostream *stream, size_t indent);
+Error writeValue(const Value &value, std::ostream *stream, size_t indent);
 
-void writeObject(const Object &object, std::ostream *stream, size_t indent)
+Error writeObject(const Object &object, std::ostream *stream, size_t indent)
 {
     if (object.empty())
     {
         *stream << "{}";
-        return;
+        return Error::None;
     }
 
     size_t i = 0;
@@ -503,19 +537,24 @@ void writeObject(const Object &object, std::ostream *stream, size_t indent)
     {
         if (i++ != 0) *stream << ",\n";
         *stream << std::string((indent + 1) * 4, ' ');
-        writeString(pair.first, stream);
+        auto error = writeString(pair.first, stream);
+        if (error != Error::None) return error;
+
         *stream << ": ";
-        writeValue(pair.second, stream, indent + 1);
+        error = writeValue(pair.second, stream, indent + 1);
+        if (error != Error::None) return error;
     }
+
     *stream << '\n' << std::string(indent * 4, ' ') << '}';
+    return Error::None;
 }
 
-void writeArray(const Array &array, std::ostream *stream, size_t indent)
+Error writeArray(const Array &array, std::ostream *stream, size_t indent)
 {
     if (array.empty())
     {
         *stream << "[]";
-        return;
+        return Error::None;
     }
 
     *stream << "[\n";
@@ -523,32 +562,35 @@ void writeArray(const Array &array, std::ostream *stream, size_t indent)
     {
         if (i != 0) *stream << ",\n";
         *stream << std::string((indent + 1) * 4, ' ');
-        writeValue(array[i], stream, indent + 1);
+        auto error = writeValue(array[i], stream, indent + 1);
+        if (error != Error::None) return error;
     }
+
     *stream << '\n' << std::string(indent * 4, ' ') << ']';
+    return Error::None;
 }
 
-void writeValue(const Value &value, std::ostream *stream, size_t indent)
+Error writeValue(const Value &value, std::ostream *stream, size_t indent)
 {
-    if (value.type() == Type::Object)
-        writeObject(value.object(), stream, indent);
-    else if (value.type() == Type::Array)
-        writeArray(value.array(), stream, indent);
-    else if (value.type() == Type::String)
-        writeString(value.string(), stream);
-    else if (value.type() == Type::Real)
-        writeReal(value.real(), stream);
-    else if (value.type() == Type::Integer)
+    if (value.type() == Type::Object) return writeObject(value.object(), stream, indent);
+    if (value.type() == Type::Array) return writeArray(value.array(), stream, indent);
+    if (value.type() == Type::String) return writeString(value.string(), stream);
+    if (value.type() == Type::Real) return writeReal(value.real(), stream);
+
+    if (value.type() == Type::Integer)
         *stream << value.integer();
     else if (value.type() == Type::Bool)
         *stream << (value.boolean() ? "true" : "false");
     else if (value.type() == Type::Null)
         *stream << "null";
     else
-        Assert(false);
+        return Error::WrongValue;
+    return Error::None;
 }
 
-Result IO::read(Value &value, const char *str)
+namespace IO
+{
+Result read(Value &value, const char *str)
 {
     value.reset();
     Parser parser{str};
@@ -557,33 +599,46 @@ Result IO::read(Value &value, const char *str)
     return Result{error, size_t(parser.ptr - str)};
 }
 
-Result IO::read(Value &value, const std::string &str)
+Result read(Value &value, const std::string &str)
 {
     auto result = read(value, str.c_str());
-    if (result.index != str.size()) result.error = Error::WrongEnd;
+    if (result.error == Error::None && result.index != str.size()) result.error = Error::WrongEnd;
     return result;
 }
 
-void IO::write(const Value &value, std::ostream *stream, Mode mode)
+Result fread(Value &value, const std::string &path)
 {
-    if (mode == Mode::Readable)
-        writeValue(value, stream, 0);
-    else
-        writeValue(value, stream);
+    auto file = fopen(path.c_str(), "r");
+    if (file == NULL) return Result{Error::FailedFileIO, 0};
+
+    fseek(file, 0, SEEK_END);
+    std::string data(ftell(file), 0);
+    rewind(file);
+    fread(&data[0], 1, data.size(), file);
+
+    fclose(file);
+    return read(value, path);
 }
 
-bool IO::write(const Value &value, const std::string &path, Mode mode)
+Result write(const Value &value, std::ostream *stream, Mode mode)
 {
-    std::ofstream stream(path);
-    if (!stream.is_open()) return false;
-    write(value, &stream, mode);
-    return true;
+    if (mode == Mode::Readable) return Result{writeValue(value, stream, 0), 0};
+    return Result{writeValue(value, stream), 0};
 }
 
-std::string IO::write(const Value &value, Mode mode)
+Result write(const Value &value, std::string &data, Mode mode)
 {
     std::ostringstream stream;
-    write(value, &stream, mode);
-    return stream.str();
+    auto result = write(value, &stream, mode);
+    data = stream.str();
+    return result;
 }
+
+Result fwrite(const Value &value, const std::string &path, Mode mode)
+{
+    std::ofstream stream(path);
+    if (!stream.is_open()) return Result{Error::FailedFileIO, 0};
+    return write(value, &stream, mode);
+}
+}  // namespace IO
 }  // namespace Neyson
