@@ -80,10 +80,10 @@ The data types that this library provides are:
 + ```Neyson::Integer``` which is the integer type that holds an integer json number (which is int64_t).
 + ```Neyson::Real``` which is the floating-point type that holds an floating-point json number (which is double).
 
-Some of the types above are ```typedef```'s of C++ containers and types but they might change in future so in order for the code to be compatible use these types instead.
+Some of the types above are aliases of C++ containers and types but they might change in future so in order for the code to be compatible use these types instead.
 
 ## Reading
-In order to parse a json document you can use ```Neyson::IO::read``` function which takes a ```Neyson::Value``` and a ```std::string``` or a ```const char *``` and reads the string into the given value and returns ```Neyson::Result``` class which contains the error code and size of bytes read from the string. Note that if you give ```std::string``` as input to this function and the parser doesn't reach the end of the string the result will have ```Neyson::Error::WrongEnd``` error code. Here is an example of reading a json document:
+In order to parse a json document you can use ```Neyson::IO::read``` function which takes a ```Neyson::Value``` and a ```std::string``` or a ```const char *``` and reads the string into the given value and returns ```Neyson::Result``` class which contains the error code and size of bytes read from the string. If you want to parse a file use ```Neyson::IO::fread``` instead.Note that if you give ```std::string``` as input to this function and the parser doesn't reach the end of the string the result will have ```Neyson::Error::WrongEnd``` error code. Here is an example of reading a json document:
 
 ``` c++
 using namespace Neyson;
@@ -108,7 +108,7 @@ Alex
 ```
 
 ## Writing
-You can serialize a json value into a string or a file or a custom stream. This can be done using ```Neyson::IO::write``` function which takes ```Neyson::Value``` as the first argument. If you don't pass the second argument the function returns the serialized data as a ```std::string```. If you pass a ```std::string``` as the second argument holding a path to a file the function returns ```bool``` indicating success or failure. If you pass a ```std::ostream *``` as the second argument then the data will be written to the stream. There is also another argument you can pass which is ```Neyson::Mode``` which currently consists of compact mode (no spaces and new lines) and human readable mode. Here is an example of writing a json document.
+You can serialize a json value into a string or a file or a custom stream. This can be done using ```Neyson::IO::write``` function which takes ```Neyson::Value``` and writes it to a string or a stream depending on the second input and returns the result (indicating success or failure). There is also another argument you can pass which is ```Neyson::Mode``` which currently consists of compact mode (no spaces and new lines) and human readable mode. Here is an example of writing a json document.
 
 ``` c++
 using namespace Neyson;
@@ -118,7 +118,10 @@ object["id"] = 1;
 object["name"] = "Alex";
 object["value"] = 0.2;
 
-cout << IO::write(object, Mode::Readable) << endl;
+std::string data;
+auto result = IO::write(object, data, Mode::Readable);
+assert(result);
+cout << data << endl;
 ```
 
 Output:
