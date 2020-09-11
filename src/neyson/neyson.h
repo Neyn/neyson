@@ -58,12 +58,10 @@ namespace Neyson
 enum class Error
 {
     None,
-    WrongEnd,
-    WrongNumber,
-    WrongString,
-    WrongStart,
-    WrongValue,
-    FailedFileIO,
+    FileIOError,
+    InvalidNumber,
+    InvalidString,
+    InvalidValueType,
     ExpectedColon,
     ExpectedComma,
     ExpectedStart,
@@ -75,6 +73,8 @@ enum class Error
     ExpectedBracketClose,
     ExpectedCommaOrBraceClose,
     ExpectedCommaOrBracketClose,
+    FailedToReachEnd,
+    UnexpectedValueStart,
 };
 
 /// Type of the Value returned by Value::type() function.

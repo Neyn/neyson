@@ -359,8 +359,8 @@ Error readNumber(Value &number, Parser &parser)
     std::string string(parser.ptr, strspn(parser.ptr, "-+.eE0123456789"));
     // clang-format off
     if (string.find_first_of(".eE") == std::string::npos)
-        try{ number = std::stoll(string); } catch (...) { return Error::WrongNumber; }
-    else try{ number = std::stod(string); } catch (...) { return Error::WrongNumber; }
+        try{ number = std::stoll(string); } catch (...) { return Error::InvalidNumber; }
+    else try{ number = std::stod(string); } catch (...) { return Error::InvalidNumber; }
     // clang-format on
     parser.ptr += string.size();
     return Error::None;
@@ -392,7 +392,7 @@ Error readValue(Value &value, Parser &parser)
         value = Value();
         return Error::None;
     }
-    return Error::WrongStart;
+    return Error::UnexpectedValueStart;
 }
 
 Error unfixString(String &string)
@@ -403,31 +403,22 @@ Error unfixString(String &string)
     {
         if ((string[i] & 0xF8) == 0xF0)
         {
-            if (i + 4 > string.size()) return Error::WrongString;
+            if (i + 4 > string.size()) return Error::InvalidString;
             output.append(string.data() + i, 4);
             i += 3;
         }
         else if ((string[i] & 0xF0) == 0xE0)
         {
-            if (i + 3 > string.size()) return Error::WrongString;
+            if (i + 3 > string.size()) return Error::InvalidString;
             output.append(string.data() + i, 3);
             i += 2;
         }
         else if ((string[i] & 0xE0) == 0xC0)
         {
-            if (i + 2 > string.size()) return Error::WrongString;
+            if (i + 2 > string.size()) return Error::InvalidString;
             output.append(string.data() + i, 2);
             i += 1;
         }
-
-        else if (string[i] < 10)
-            output.append("\\u000").push_back('0' + string[i]);
-        else if (string[i] < 16)
-            output.append("\\u000").push_back('A' + string[i] - 10);
-        else if (string[i] < 26)
-            output.append("\\u001").push_back('0' + string[i] - 16);
-        else if (string[i] < 32)
-            output.append("\\u001").push_back('A' + string[i] - 26);
 
         else if (string[i] == '\"')
             output.append("\\\"");
@@ -445,6 +436,16 @@ Error unfixString(String &string)
             output.append("\\r");
         else if (string[i] == '\t')
             output.append("\\t");
+
+        else if (string[i] < 10)
+            output.append("\\u000").push_back('0' + string[i]);
+        else if (string[i] < 16)
+            output.append("\\u000").push_back('A' + string[i] - 10);
+        else if (string[i] < 26)
+            output.append("\\u001").push_back('0' + string[i] - 16);
+        else if (string[i] < 32)
+            output.append("\\u001").push_back('A' + string[i] - 26);
+
         else
             output.push_back(string[i]);
     }
@@ -463,7 +464,7 @@ Error writeString(String string, std::ostream *stream)
 
 Error writeReal(double number, std::ostream *stream)
 {
-    if (std::isnan(number)) return Error::WrongNumber;
+    if (std::isnan(number) || std::isinf(number)) return Error::InvalidNumber;
     *stream << std::setprecision(16) << number;
     return Error::None;
 }
@@ -517,7 +518,7 @@ Error writeValue(const Value &value, std::ostream *stream)
     else if (value.type() == Type::Null)
         *stream << "null";
     else
-        return Error::WrongValue;
+        return Error::InvalidValueType;
     return Error::None;
 }
 
@@ -584,7 +585,7 @@ Error writeValue(const Value &value, std::ostream *stream, size_t indent)
     else if (value.type() == Type::Null)
         *stream << "null";
     else
-        return Error::WrongValue;
+        return Error::InvalidValueType;
     return Error::None;
 }
 
@@ -602,14 +603,14 @@ Result read(Value &value, const char *str)
 Result read(Value &value, const std::string &str)
 {
     auto result = read(value, str.c_str());
-    if (result.error == Error::None && result.index != str.size()) result.error = Error::WrongEnd;
+    if (result.error == Error::None && result.index != str.size()) result.error = Error::FailedToReachEnd;
     return result;
 }
 
 Result fread(Value &value, const std::string &path)
 {
     auto file = fopen(path.c_str(), "r");
-    if (file == NULL) return Result{Error::FailedFileIO, 0};
+    if (file == NULL) return Result{Error::FileIOError, 0};
 
     fseek(file, 0, SEEK_END);
     std::string data(ftell(file), 0);
@@ -637,7 +638,7 @@ Result write(const Value &value, std::string &data, Mode mode)
 Result fwrite(const Value &value, const std::string &path, Mode mode)
 {
     std::ofstream stream(path);
-    if (!stream.is_open()) return Result{Error::FailedFileIO, 0};
+    if (!stream.is_open()) return Result{Error::FileIOError, 0};
     return write(value, &stream, mode);
 }
 }  // namespace IO
