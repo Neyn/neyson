@@ -1,0 +1,25 @@
+/// Constructor that takes TYPE and sets the value to it by moving.
+Value(TYPE &&val);                
+
+/// Constructor that takes TYPE type and sets the value to it by copying. 
+Value(const TYPE &val);   
+
+/// Assignment operator that takes TYPE type and sets the value to it by moving.
+Value &operator=(TYPE &&val);   
+
+/// Assignment operator that takes TYPE type and sets the value to it by copying.   
+Value &operator=(const TYPE &val); 
+
+/// Setter function that takes TYPE type and sets the value to it by moving.
+TYPE &FUNC(TYPE &&val);      
+
+/// Setter function that takes TYPE type and sets the value to it by copying.
+TYPE &FUNC(const TYPE &val);    
+
+/// Getter function that returns a reference to the TYPE type that this class is holding. 
+/// If the type that this class holds is not TYPE the function throws a runtime exception.
+TYPE &FUNC();       
+
+/// Getter function that returns a constant reference to the TYPE type that this class is holding. 
+/// If the type that this class holds is not TYPE the function throws a runtime exception.               
+const TYPE &FUNC() const;
