@@ -49,6 +49,17 @@
         throw 0;                                                                                             \
     }
 
+#define THROW(expr)                                                                                          \
+    try                                                                                                      \
+    {                                                                                                        \
+        expr;                                                                                                \
+        cout << RED << "\"" << #expr << "\" Failed at Line " << to_string(__LINE__) << "!" << CLEAR << endl; \
+        throw 0;                                                                                             \
+    }                                                                                                        \
+    catch (...)                                                                                              \
+    {                                                                                                        \
+    }
+
 #define NTHROW(expr)                                                                                         \
     try                                                                                                      \
     {                                                                                                        \
@@ -118,12 +129,12 @@ void checkValue(const Value &value1, const Value &value2)
 {
     auto type = value1.type();
     CHECK(value1.type() == value2.type());
-    if (type == Type::Object) checkObject(value1.object(), value2.object());
-    if (type == Type::Array) checkArray(value1.array(), value2.array());
-    if (type == Type::String) CHECK(value1.string() == value2.string());
-    if (type == Type::Real) CHECK(abs(value1.real() - value2.real()) <= std::numeric_limits<Real>::epsilon());
-    if (type == Type::Integer) CHECK(value1.integer() == value2.integer());
     if (type == Type::Bool) CHECK(value1.boolean() == value2.boolean());
+    if (type == Type::Integer) CHECK(value1.integer() == value2.integer());
+    if (type == Type::Real) CHECK(abs(value1.real() - value2.real()) <= std::numeric_limits<Real>::epsilon());
+    if (type == Type::String) CHECK(value1.string() == value2.string());
+    if (type == Type::Array) checkArray(value1.array(), value2.array());
+    if (type == Type::Object) checkObject(value1.object(), value2.object());
 }
 
 void check(const Value &value1, const Value &value2) { checkValue(value1, value2); }
@@ -165,13 +176,13 @@ Integer randomInt() { return rand(); }
 
 Value randomValue()
 {
-    auto type = Type(rand() % int(Type::Null));
-    if (type == Type::Object) return randomObject();
-    if (type == Type::Array) return randomArray();
-    if (type == Type::String) return randomString();
-    if (type == Type::Real) return randomReal();
-    if (type == Type::Integer) return randomInt();
+    auto type = Type(rand() % int(Type::Object));
     if (type == Type::Bool) return bool(rand() % 2);
+    if (type == Type::Integer) return randomInt();
+    if (type == Type::Real) return randomReal();
+    if (type == Type::String) return randomString();
+    if (type == Type::Array) return randomArray();
+    if (type == Type::Object) return randomObject();
     return Value();
 }
 
@@ -241,6 +252,24 @@ TEST(Value)
     Value value1 = std::move(value);
     CHECK(value.type() == Type::Null);
     CHECK(value1.type() == Type::Integer);
+
+    value = 10;
+    THROW(value.real());
+    THROW(value.array());
+    THROW(value.object());
+
+    value = Array{10};
+    THROW(value.real());
+    THROW(value.integer());
+    THROW(value.object());
+    THROW(value["test"]);
+
+    value = Object{{"test", 10}};
+    THROW(value.real());
+    THROW(value.integer());
+    THROW(value.array());
+    THROW(value[0]);
+    THROW(static_cast<const Value &>(value)["name"]);
 }
 
 TEST(Read)

@@ -40,22 +40,19 @@
 #include <limits>
 #include <sstream>
 
-// TODO remove
-#include <bitset>
-
-#define Skip(r)                                  \
+#define Skip(ret)                                \
     parser.ptr += strspn(parser.ptr, " \t\r\n"); \
+    if (parser.ptr[0] == '\0') return ret;
+
+#define See(str)                            \
+    parser.ptr += strcspn(parser.ptr, str); \
     if (parser.ptr[0] == '\0') return r;
 
-#define See(s)                            \
-    parser.ptr += strcspn(parser.ptr, s); \
-    if (parser.ptr[0] == '\0') return r;
+#define Read(chr, ret) \
+    if ((parser.ptr++)[0] != chr) return ret;
 
-#define Read(c, r) \
-    if ((parser.ptr++)[0] != c) return r;
-
-#define Assert(expr) \
-    if (!static_cast<bool>(expr)) throw std::runtime_error(std::string("\"") + #expr + "\" Failed.");
+#define Assert(expr, msg) \
+    if (!static_cast<bool>(expr)) throw std::runtime_error(std::string("") + msg);
 
 #define Construct(C, T, N, A, F, P)     \
     Value::Value(C &&val)               \
@@ -85,50 +82,68 @@
         return *this;                     \
     }
 
-#define Return(C, T, N, A, F, P)                                  \
-    C &Value::F(C &&val)                                          \
-    {                                                             \
-        reset();                                                  \
-        *this = std::move(val);                                   \
-        return F();                                               \
-    }                                                             \
-    C &Value::F(const C &val)                                     \
-    {                                                             \
-        reset();                                                  \
-        *this = val;                                              \
-        return F();                                               \
-    }                                                             \
-    C &Value::F() { Assert(_type == Type::T) return P _value.N; } \
-    const C &Value::F() const { Assert(_type == Type::T) return P _value.N; }
+#define Return(C, T, N, A, F, P)                                                                               \
+    C &Value::F(C &&val)                                                                                       \
+    {                                                                                                          \
+        reset();                                                                                               \
+        *this = std::move(val);                                                                                \
+        return F();                                                                                            \
+    }                                                                                                          \
+    C &Value::F(const C &val)                                                                                  \
+    {                                                                                                          \
+        reset();                                                                                               \
+        *this = val;                                                                                           \
+        return F();                                                                                            \
+    }                                                                                                          \
+                                                                                                               \
+    C &Value::F()                                                                                              \
+    {                                                                                                          \
+        Assert(_type == Type::T, "Value has type " + #T + " but you requested " + TypeName[int(_type)] + "!"); \
+        return P _value.N;                                                                                     \
+    }                                                                                                          \
+    const C &Value::F() const                                                                                  \
+    {                                                                                                          \
+        Assert(_type == Type::T, "Value has type " + #T + " but you requested " + TypeName[int(_type)] + "!"); \
+        return P _value.N;                                                                                     \
+    }
 
 #define Function(F)                      \
-    F(Object, Object, o, new, object, *) \
-    F(Array, Array, a, new, array, *)    \
-    F(String, String, s, new, string, *) \
-    F(Real, Real, r, , real, )           \
+    F(bool, Bool, b, , boolean, )        \
     F(Integer, Integer, i, , integer, )  \
-    F(bool, Bool, b, , boolean, )
+    F(Real, Real, r, , real, )           \
+    F(String, String, s, new, string, *) \
+    F(Array, Array, a, new, array, *)    \
+    F(Object, Object, o, new, object, *)
 
 namespace Neyson
 {
+const char *TypeName[] = {
+
+    "Null", "Bool", "Integer", "Real", "String", "Array", "Object",
+};
+
 struct Parser
 {
     const char *ptr;
 };
+
+Value::~Value() { reset(); }
+
+Value::Value() : _type(Type::Null) {}
 
 Value::Value(const char *val)
 {
     _type = Type::String;
     _value.s = new String(val);
 }
+
 Value::Value(const Value &val) : _type(val._type), _value(val._value)
 {
     if (_type == Type::Object) _value.o = new Object(*val._value.o);
     if (_type == Type::Array) _value.a = new Array(*val._value.a);
     if (_type == Type::String) _value.s = new String(*val._value.s);
 }
-Value::~Value() { reset(); }
-Value::Value() : _type(Type::Null) {}
+
 Value::Value(Value &&val) : _type(val._type), _value(val._value) { val._type = Type::Null; }
 
 Value &Value::operator=(const char *val)
@@ -146,6 +161,7 @@ Value &Value::operator=(Value &&val)
     val._type = Type::Null;
     return *this;
 }
+
 Value &Value::operator=(const Value &val)
 {
     reset();
@@ -165,47 +181,57 @@ void Value::reset()
     _type = Type::Null;
 }
 
-bool Value::tobool() const
+Function(Construct) Function(Assign) Function(Return);
+
+const Value &Value::operator[](const std::string &name) const
+{
+    const auto &object = this->object();
+    auto it = object.find(name);
+    Assert(it != object.end(), "Object doesn't have key \"" + name + "\"!");
+    return it->second;
+}
+
+Neyson::Value::operator bool() const
 {
     if (_type == Type::Null) return false;
     if (_type == Type::Bool) return boolean();
     if (_type == Type::Integer) return bool(integer());
     if (_type == Type::Real) return std::abs(real()) < std::numeric_limits<Real>::epsilon();
     if (_type == Type::String) return !string().empty();
-    throw std::runtime_error("Value is not convertable to boolean");
+    if (_type == Type::Array) return !array().empty();
+    if (_type == Type::Object) return !object().empty();
+    throw std::runtime_error("Value is not convertable to boolean!");
 }
 
-Integer Value::tointeger() const
+Neyson::Value::operator Integer() const
 {
     if (_type == Type::Null) return 0;
     if (_type == Type::Bool) return Integer(boolean());
     if (_type == Type::Integer) return integer();
     if (_type == Type::Real) return Integer(real());
     if (_type == Type::String) return std::stoll(string());
-    throw std::runtime_error("Value is not convertable to integer");
+    throw std::runtime_error("Value is not convertable to integer!");
 }
 
-Real Value::toreal() const
+Neyson::Value::operator Real() const
 {
     if (_type == Type::Null) return 0.0;
     if (_type == Type::Bool) return Real(boolean());
     if (_type == Type::Integer) return Real(integer());
     if (_type == Type::Real) return real();
     if (_type == Type::String) return std::stod(string());
-    throw std::runtime_error("Value is not convertable to real");
+    throw std::runtime_error("Value is not convertable to real!");
 }
 
-String Value::tostring() const
+Neyson::Value::operator String() const
 {
     if (_type == Type::Null) return "";
     if (_type == Type::Bool) return std::to_string(boolean());
     if (_type == Type::Integer) return std::to_string(integer());
     if (_type == Type::Real) return std::to_string(real());
     if (_type == Type::String) return string();
-    throw std::runtime_error("Value is not convertable to string");
+    throw std::runtime_error("Value is not convertable to string!");
 }
-
-Function(Construct) Function(Assign) Function(Return);
 
 Error readValue(Value &value, Parser &parser);
 

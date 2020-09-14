@@ -80,13 +80,13 @@ enum class Error
 /// Type of the Value returned by Value::type() function.
 enum class Type
 {
-    Object,
-    Array,
-    String,
-    Real,
-    Integer,
+    Null,
     Bool,
-    Null
+    Integer,
+    Real,
+    String,
+    Array,
+    Object,
 };
 
 /// Result of parsing a json document returned by IO::read() function.
@@ -119,12 +119,12 @@ class Value
 {
     union Variant
     {
-        Object *o;
-        Array *a;
-        String *s;
-        Real r;
-        Integer i;
         bool b;
+        Integer i;
+        Real r;
+        String *s;
+        Array *a;
+        Object *o;
     };
 
     Type _type;
@@ -174,23 +174,28 @@ public:
         return *this;
     }
 
-    inline bool isnull() const { return _type == Type::Null; }
-    inline bool isboolean() const { return _type == Type::Bool; }
-    inline bool isinteger() const { return _type == Type::Integer; }
-    inline bool isreal() const { return _type == Type::Real; }
-    inline bool isstring() const { return _type == Type::String; }
-    inline bool isarrray() const { return _type == Type::Array; }
-    inline bool isobject() const { return _type == Type::Object; }
-
-    bool tobool() const;
-    Integer tointeger() const;
-    Real toreal() const;
-    String tostring() const;
-
     void reset();
     inline Type type() const { return _type; }
-    Function(Object, object) Function(Array, array) Function(String, string);
-    Function(Real, real) Function(Integer, integer) Function(bool, boolean);
+    Function(bool, boolean) Function(Integer, integer) Function(Real, real);
+    Function(String, string) Function(Array, array) Function(Object, object);
+
+    operator bool() const;
+    operator Integer() const;
+    operator Real() const;
+    operator String() const;
+
+    inline bool operator==(Type type) const { return _type == type; }
+    inline bool operator!=(Type type) const { return _type != type; }
+
+    inline Value &operator[](int index) { return array()[index]; }
+    inline Value &operator[](size_t index) { return array()[index]; }
+    inline Value &operator[](const char *name) { return object()[name]; }
+    inline Value &operator[](const std::string &name) { return object()[name]; }
+
+    inline const Value &operator[](int index) const { return array()[index]; }
+    inline const Value &operator[](size_t index) const { return array()[index]; }
+    inline const Value &operator[](const char *name) const { return (*this)[std::string(name)]; }
+    const Value &operator[](const std::string &name) const;
 };
 
 /// Writing mode of the IO::write() function.
