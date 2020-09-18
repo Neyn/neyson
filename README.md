@@ -64,7 +64,7 @@ target_include_directories(myexec PUBLIC ${NEYSON_INCLUDE_DIRS})
 Please note that these are examples and you might want to change some stuff like the path given to ```add_subdirectory```.
 
 # Usage
-Please read the [documentation](USAGE.md) to learn how to use this library.
+Please read the [usage](USAGE.md) and Doxygen documentation in ```docs/``` directory to learn how to use this library.
 
 # Tests
 You don't need to run the tests in order to use the library but if you want to you can do this in project's directory:

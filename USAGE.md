@@ -33,6 +33,12 @@ const char *data = "{\"id\":1, \"name\":\"Alex\", \"value\":0.2}";
 Value document;
 Result result = IO::read(document, data);
 
+if (document != Type::Object)
+{
+    cerr << "Document root is not object!" << endl;
+    exit(1);
+}
+
 Object object = document.object();
 cout << object["id"].integer() << endl;
 cout << object["name"].string() << endl;
@@ -122,8 +128,8 @@ Value value; // is null here
 value = 10; // set to 10
 value.integer(10); // another way to set to 10
 Integer integer = value.integer(); // get value
-bool isinteger = value.isinteger(); // is the value integer?
-Real real = value.toreal(); // get value of other type
+bool isinteger = value == Type::Integer; // is the value integer?
+Real real = static_cast<Real>(value); // get value of other type
 ```
 
 You can set a value to null by:
@@ -132,4 +138,17 @@ You can set a value to null by:
 Value value = 10;
 value.reset(); // set to null
 value = Value(); // another way to set to null
+```
+
+There is also ```operator[]``` to make accessing object and array elements easier:
+
+``` c++
+Value value = {10, 10, 10};
+cout << value[0] << endl;
+cout << value[1] << endl;
+cout << value[2] << endl;
+
+value = {{"A", 10}, {"B", 20}};
+cout << value["A"] << endl;
+cout << value["B"] << endl;
 ```
