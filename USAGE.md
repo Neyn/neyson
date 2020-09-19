@@ -2,6 +2,7 @@
 - [Table of Contents](#table-of-contents)
 - [Introduction](#introduction)
 - [Data Types](#data-types)
+- [Version](#version)
 - [Reading](#reading)
 - [Validation](#validation)
 - [Writing](#writing)
@@ -21,6 +22,15 @@ The data types that this library provides are:
 + ```Neyson::Real``` which is the floating-point type that holds an floating-point json number (which is ```double```).
 
 Some of the types above are aliases of C++ containers and types but they might change in future so in order for the code to be compatible use these types instead.
+
+# Version
+You can check and use version information through C++ marcos listed below:
+
+```
+NEYSON_VERSION_MAJOR
+NEYSON_VERSION_MINOR
+NEYSON_VERSION_PATCH
+```
 
 # Reading
 You can parse json documents using ```Neyson::IO::read``` and ```Neyson::IO::fread```. Note that if the parser doesn't reach the end of the string the result will have ```Neyson::Error::WrongEnd``` error code (except when passing ```const char *```). Here is an example of reading a json document:
