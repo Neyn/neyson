@@ -43,6 +43,12 @@ const char *data = "{\"id\":1, \"name\":\"Alex\", \"value\":0.2}";
 Value document;
 Result result = IO::read(document, data);
 
+if (!result)
+{
+    cerr << "Failed to read the document!" << endl;
+    exit(1);
+}
+
 if (document != Type::Object)
 {
     cerr << "Document root is not object!" << endl;
