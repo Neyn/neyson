@@ -716,5 +716,5 @@ std::ostream &operator<<(std::ostream &os, Mode mode)
     return os << "Mode<Unknown>";
 }
 
-std::ostream &operator<<(std::ostream &os, Value value) { return os << "Value<" << value.type() << ">"; }
+std::ostream &operator<<(std::ostream &os, const Value &value) { return os << "Value<" << value.type() << ">"; }
 }  // namespace Neyson

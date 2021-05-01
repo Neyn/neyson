@@ -435,13 +435,13 @@ std::ostream &operator<<(std::ostream &os, Error error);
 std::ostream &operator<<(std::ostream &os, Type type);
 
 /// Operator for printing Result to standard stream
-std::ostream &operator<<(std::ostream &os, Result result);
+std::ostream &operator<<(std::ostream &os, const Result &result);
 
 /// Operator for printing Mode to standard stream
 std::ostream &operator<<(std::ostream &os, Mode mode);
 
 /// Operator for printing Value to standard stream
-std::ostream &operator<<(std::ostream &os, Value value);
+std::ostream &operator<<(std::ostream &os, const Value &value);
 }  // namespace Neyson
 
 #undef Function
