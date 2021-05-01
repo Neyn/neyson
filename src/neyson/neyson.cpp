@@ -703,7 +703,7 @@ std::ostream &operator<<(std::ostream &os, Type type)
     return os << "Type<Unknown>";
 }
 
-std::ostream &operator<<(std::ostream &os, Result result)
+std::ostream &operator<<(std::ostream &os, const Result &result)
 {
     return os << "Result<" << result.error << ", "
               << "Index<" << result.index << ">>";
