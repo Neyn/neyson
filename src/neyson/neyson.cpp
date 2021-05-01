@@ -644,7 +644,7 @@ Result fread(Value &value, const std::string &path)
     fread(&data[0], 1, data.size(), file);
 
     fclose(file);
-    return read(value, path);
+    return read(value, data);
 }
 
 Result write(const Value &value, std::ostream *stream, Mode mode)
