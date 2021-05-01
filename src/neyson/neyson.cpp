@@ -98,12 +98,12 @@
                                                                                                                \
     C &Value::F()                                                                                              \
     {                                                                                                          \
-        Assert(_type == Type::T, "Value has type " + #T + " but you requested " + TypeName[int(_type)] + "!"); \
+        Assert(_type == Type::T, "Value has type " + TypeName[int(_type)] + " but you requested " + #T + "!"); \
         return P _value.N;                                                                                     \
     }                                                                                                          \
     const C &Value::F() const                                                                                  \
     {                                                                                                          \
-        Assert(_type == Type::T, "Value has type " + #T + " but you requested " + TypeName[int(_type)] + "!"); \
+        Assert(_type == Type::T, "Value has type " + TypeName[int(_type)] + " but you requested " + #T + "!"); \
         return P _value.N;                                                                                     \
     }
 
