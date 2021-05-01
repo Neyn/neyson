@@ -671,50 +671,72 @@ Result fwrite(const Value &value, const std::string &path, Mode mode)
 
 std::ostream &operator<<(std::ostream &os, Error error)
 {
-    if (error == Error::None) return os << "Error<None>";
-    if (error == Error::FileIOError) return os << "Error<FileIOError>";
-    if (error == Error::InvalidNumber) return os << "Error<InvalidNumber>";
-    if (error == Error::InvalidString) return os << "Error<InvalidString>";
-    if (error == Error::InvalidValueType) return os << "Error<InvalidValueType>";
-    if (error == Error::ExpectedColon) return os << "Error<ExpectedColon>";
-    if (error == Error::ExpectedComma) return os << "Error<ExpectedComma>";
-    if (error == Error::ExpectedStart) return os << "Error<ExpectedStart>";
-    if (error == Error::ExpectedQuoteOpen) return os << "Error<ExpectedQuoteOpen>";
-    if (error == Error::ExpectedQuoteClose) return os << "Error<ExpectedQuoteClose>";
-    if (error == Error::ExpectedBraceOpen) return os << "Error<ExpectedBraceOpen>";
-    if (error == Error::ExpectedBraceClose) return os << "Error<ExpectedBraceClose>";
-    if (error == Error::ExpectedBracketOpen) return os << "Error<ExpectedBracketOpen>";
-    if (error == Error::ExpectedBracketClose) return os << "Error<ExpectedBracketClose>";
-    if (error == Error::ExpectedCommaOrBraceClose) return os << "Error<ExpectedCommaOrBraceClose>";
-    if (error == Error::ExpectedCommaOrBracketClose) return os << "Error<ExpectedCommaOrBracketClose>";
-    if (error == Error::FailedToReachEnd) return os << "Error<FailedToReachEnd>";
-    if (error == Error::UnexpectedValueStart) return os << "Error<UnexpectedValueStart>";
-    return os << "Error<Unknown>";
+    if (error == Error::None) return os << "None";
+    if (error == Error::FileIOError) return os << "FileIOError";
+    if (error == Error::InvalidNumber) return os << "InvalidNumber";
+    if (error == Error::InvalidString) return os << "InvalidString";
+    if (error == Error::InvalidValueType) return os << "InvalidValueType";
+    if (error == Error::ExpectedColon) return os << "ExpectedColon";
+    if (error == Error::ExpectedComma) return os << "ExpectedComma";
+    if (error == Error::ExpectedStart) return os << "ExpectedStart";
+    if (error == Error::ExpectedQuoteOpen) return os << "ExpectedQuoteOpen";
+    if (error == Error::ExpectedQuoteClose) return os << "ExpectedQuoteClose";
+    if (error == Error::ExpectedBraceOpen) return os << "ExpectedBraceOpen";
+    if (error == Error::ExpectedBraceClose) return os << "ExpectedBraceClose";
+    if (error == Error::ExpectedBracketOpen) return os << "ExpectedBracketOpen";
+    if (error == Error::ExpectedBracketClose) return os << "ExpectedBracketClose";
+    if (error == Error::ExpectedCommaOrBraceClose) return os << "ExpectedCommaOrBraceClose";
+    if (error == Error::ExpectedCommaOrBracketClose) return os << "ExpectedCommaOrBracketClose";
+    if (error == Error::FailedToReachEnd) return os << "FailedToReachEnd";
+    if (error == Error::UnexpectedValueStart) return os << "UnexpectedValueStart";
+    return os << "Unknown";
 }
 
 std::ostream &operator<<(std::ostream &os, Type type)
 {
-    if (type == Type::Null) return os << "Type<Null>";
-    if (type == Type::Bool) return os << "Type<Bool>";
-    if (type == Type::Integer) return os << "Type<Integer>";
-    if (type == Type::String) return os << "Type<String>";
-    if (type == Type::Array) return os << "Type<Array>";
-    if (type == Type::Object) return os << "Type<Object>";
-    return os << "Type<Unknown>";
+    if (type == Type::Null) return os << "Null";
+    if (type == Type::Bool) return os << "Bool";
+    if (type == Type::Integer) return os << "Integer";
+    if (type == Type::String) return os << "String";
+    if (type == Type::Array) return os << "Array";
+    if (type == Type::Object) return os << "Object";
+    return os << "Unknown";
 }
 
-std::ostream &operator<<(std::ostream &os, const Result &result)
-{
-    return os << "Result<" << result.error << ", "
-              << "Index<" << result.index << ">>";
-}
+std::ostream &operator<<(std::ostream &os, const Result &result) { return os << result.error << "->" << result.index; }
 
 std::ostream &operator<<(std::ostream &os, Mode mode)
 {
-    if (mode == Mode::Compact) return os << "Mode<Compact>";
-    if (mode == Mode::Readable) return os << "Mode<Readable>";
-    return os << "Mode<Unknown>";
+    if (mode == Mode::Compact) return os << "Compact";
+    if (mode == Mode::Readable) return os << "Readable";
+    return os << "Unknown";
 }
 
-std::ostream &operator<<(std::ostream &os, const Value &value) { return os << "Value<" << value.type() << ">"; }
+std::ostream &operator<<(std::ostream &os, const Value &value)
+{
+    if (value == Type::Null) return os << "Null";
+    if (value == Type::Bool) return os << (value.boolean() ? "true" : "false");
+    if (value == Type::Integer) return os << value.integer();
+    if (value == Type::Real) return os << value.real();
+    if (value == Type::String) return os << value.string();
+    if (value == Type::Array) return os << value.array();
+    if (value == Type::Object) return os << value.object();
+    return os << "Unknown";
+}
+
+std::ostream &operator<<(std::ostream &os, const Array &array)
+{
+    os << "[";
+    for (auto it = array.begin(); it != array.end(); it = std::next(it))
+        os << *it << (std::next(it) == array.end() ? "" : ", ");
+    return os << "]";
+}
+
+std::ostream &operator<<(std::ostream &os, const Object &object)
+{
+    os << "{";
+    for (auto it = object.begin(); it != object.end(); it = std::next(it))
+        os << it->first << ":" << it->second << (std::next(it) == object.end() ? "" : ", ");
+    return os << "}";
+}
 }  // namespace Neyson

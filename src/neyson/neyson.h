@@ -442,6 +442,10 @@ std::ostream &operator<<(std::ostream &os, Mode mode);
 
 /// Operator for printing Value to standard stream
 std::ostream &operator<<(std::ostream &os, const Value &value);
+
+std::ostream &operator<<(std::ostream &os, const Array &array);
+
+std::ostream &operator<<(std::ostream &os, const Object &object);
 }  // namespace Neyson
 
 #undef Function
