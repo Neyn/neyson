@@ -668,4 +668,53 @@ Result fwrite(const Value &value, const std::string &path, Mode mode)
     return write(value, &stream, mode);
 }
 }  // namespace IO
+
+std::ostream &operator<<(std::ostream &os, Error error)
+{
+    if (error == Error::None) return os << "Error<None>";
+    if (error == Error::FileIOError) return os << "Error<FileIOError>";
+    if (error == Error::InvalidNumber) return os << "Error<InvalidNumber>";
+    if (error == Error::InvalidString) return os << "Error<InvalidString>";
+    if (error == Error::InvalidValueType) return os << "Error<InvalidValueType>";
+    if (error == Error::ExpectedColon) return os << "Error<ExpectedColon>";
+    if (error == Error::ExpectedComma) return os << "Error<ExpectedComma>";
+    if (error == Error::ExpectedStart) return os << "Error<ExpectedStart>";
+    if (error == Error::ExpectedQuoteOpen) return os << "Error<ExpectedQuoteOpen>";
+    if (error == Error::ExpectedQuoteClose) return os << "Error<ExpectedQuoteClose>";
+    if (error == Error::ExpectedBraceOpen) return os << "Error<ExpectedBraceOpen>";
+    if (error == Error::ExpectedBraceClose) return os << "Error<ExpectedBraceClose>";
+    if (error == Error::ExpectedBracketOpen) return os << "Error<ExpectedBracketOpen>";
+    if (error == Error::ExpectedBracketClose) return os << "Error<ExpectedBracketClose>";
+    if (error == Error::ExpectedCommaOrBraceClose) return os << "Error<ExpectedCommaOrBraceClose>";
+    if (error == Error::ExpectedCommaOrBracketClose) return os << "Error<ExpectedCommaOrBracketClose>";
+    if (error == Error::FailedToReachEnd) return os << "Error<FailedToReachEnd>";
+    if (error == Error::UnexpectedValueStart) return os << "Error<UnexpectedValueStart>";
+    return os << "Error<Unknown>";
+}
+
+std::ostream &operator<<(std::ostream &os, Type type)
+{
+    if (type == Type::Null) return os << "Type<Null>";
+    if (type == Type::Bool) return os << "Type<Bool>";
+    if (type == Type::Integer) return os << "Type<Integer>";
+    if (type == Type::String) return os << "Type<String>";
+    if (type == Type::Array) return os << "Type<Array>";
+    if (type == Type::Object) return os << "Type<Object>";
+    return os << "Type<Unknown>";
+}
+
+std::ostream &operator<<(std::ostream &os, Result result)
+{
+    return os << "Result<" << result.error << ", "
+              << "Index<" << result.index << ">>";
+}
+
+std::ostream &operator<<(std::ostream &os, Mode mode)
+{
+    if (mode == Mode::Compact) return os << "Mode<Compact>";
+    if (mode == Mode::Readable) return os << "Mode<Readable>";
+    return os << "Mode<Unknown>";
+}
+
+std::ostream &operator<<(std::ostream &os, Value value) { return os << "Value<" << value.type() << ">"; }
 }  // namespace Neyson

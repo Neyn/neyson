@@ -427,6 +427,21 @@ public:
     /// If the type that this class holds is not Object the function throws a runtime exception.
     const Object &object() const;
 };
+
+/// Operator for printing Error to standard stream
+std::ostream &operator<<(std::ostream &os, Error error);
+
+/// Operator for printing Type to standard stream
+std::ostream &operator<<(std::ostream &os, Type type);
+
+/// Operator for printing Result to standard stream
+std::ostream &operator<<(std::ostream &os, Result result);
+
+/// Operator for printing Mode to standard stream
+std::ostream &operator<<(std::ostream &os, Mode mode);
+
+/// Operator for printing Value to standard stream
+std::ostream &operator<<(std::ostream &os, Value value);
 }  // namespace Neyson
 
 #undef Function
