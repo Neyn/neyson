@@ -1,6 +1,6 @@
 # BSD 3-Clause License
 #
-# Copyright (c) 2020, Shahriar Rezghi <shahriar25.ss@gmail.com>
+# Copyright (c) 2020-2025, Shahriar Rezghi <shahriar.rezghi.sh@gmail.com>
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -28,60 +28,113 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-cmake_minimum_required(VERSION 3.5)
-project(Neyson VERSION 0.1.0 LANGUAGES CXX)
+cmake_minimum_required(VERSION 3.10)
+project(Neyson VERSION 2.0.0 LANGUAGES CXX)
+
+#---------------------------------------------------------------------
+# Determine if this is the master project and set test option accordingly
+#---------------------------------------------------------------------
+if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
+  set(NEYSON_MASTER ON)
+else()
+  set(NEYSON_MASTER OFF)
+endif()
+option(NEYSON_BUILD_TESTS "Build Neyson tests" ${NEYSON_MASTER})
+
+#---------------------------------------------------------------------
+# SQLite Support: Enable by default if found, else disable
+#---------------------------------------------------------------------
+find_package(SQLite3 QUIET)
+if(SQLite3_FOUND)
+  option(NEYSON_ENABLE_SQLITE "Build Neyson with SQLite support" ON)
+else()
+  option(NEYSON_ENABLE_SQLITE "Build Neyson with SQLite support" OFF)
+endif()
+
+if(NEYSON_ENABLE_SQLITE AND NOT SQLite3_FOUND)
+  message(FATAL_ERROR "SQLite interface is enabled but couldn't find the SQLite3 library")
+endif()
+
+#---------------------------------------------------------------------
+# Set C++ Standard and Position Independent Code
+#---------------------------------------------------------------------
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-set(NEYSON_MASTER OFF CACHE INTERNAL "")
-if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
-    set(NEYSON_MASTER ON CACHE INTERNAL "")
-endif()
-
-set(NEYSON_VERSION ${PROJECT_VERSION} CACHE INTERNAL "")
-set(NEYSON_LIBRARIES "neyson" CACHE INTERNAL "")
-set(NEYSON_INCLUDE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/src/"
-    "${CMAKE_CURRENT_BINARY_DIR}/gen/" CACHE INTERNAL "")
-
-option(NEYSON_BUILD_LIB "Build Neyson Library" ON)
-option(NEYSON_BUILD_TESTS "Build Neyson Tests" ${NEYSON_MASTER})
-option(NEYSON_INSTALL_LIB "Install Neyson Library" ${NEYSON_MASTER})
-
+#---------------------------------------------------------------------
+# Configure the header file from config.h.in
+#---------------------------------------------------------------------
 configure_file(
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/neyson/config.h.in"
-    "${CMAKE_CURRENT_BINARY_DIR}/gen/neyson/config.h")
-file(GLOB HEADERS
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/neyson/neyson.h"
-    "${CMAKE_CURRENT_BINARY_DIR}/gen/neyson/config.h")
-file(GLOB SOURCES
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/neyson/neyson.h"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/neyson/neyson.cpp")
+  "${CMAKE_CURRENT_SOURCE_DIR}/src/neyson/config.h.in"
+  "${CMAKE_CURRENT_BINARY_DIR}/gen/neyson/config.h"
+  @ONLY
+)
 
-if(NEYSON_BUILD_LIB)
-    add_library(neyson ${SOURCES})
-    target_include_directories(neyson PUBLIC
-        "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/>"
-        "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/gen/>"
-        "$<INSTALL_INTERFACE:${CMAKE_INSTALL_PREFIX}/include/>")
+#---------------------------------------------------------------------
+# Gather Source and Header Files
+#---------------------------------------------------------------------
+file(GLOB_RECURSE NEYSON_SOURCES
+  "${CMAKE_CURRENT_SOURCE_DIR}/src/neyson/*.cpp"
+)
+file(GLOB_RECURSE NEYSON_PUBLIC_HEADERS
+  "${CMAKE_CURRENT_SOURCE_DIR}/src/neyson/*.h"
+)
+
+#---------------------------------------------------------------------
+# Create the Library Target
+#---------------------------------------------------------------------
+add_library(neyson ${NEYSON_SOURCES} ${NEYSON_PUBLIC_HEADERS})
+target_include_directories(neyson
+  PUBLIC
+    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>"
+    "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/gen>"
+    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/3rd/rapidxml>"
+    "$<INSTALL_INTERFACE:include>"
+)
+target_compile_features(neyson PUBLIC cxx_std_11)
+add_library(neyson::neyson ALIAS neyson)
+
+#---------------------------------------------------------------------
+# Link SQLite and add compile definition if enabled
+#---------------------------------------------------------------------
+if(NEYSON_ENABLE_SQLITE)
+  target_link_libraries(neyson PRIVATE SQLite::SQLite3)
+  target_compile_definitions(neyson PUBLIC NEYSON_USE_SQLITE)
 endif()
 
-if(NEYSON_INSTALL_LIB)
-    install(TARGETS neyson
-        EXPORT neysonConfig
-        ARCHIVE DESTINATION lib
-        LIBRARY DESTINATION lib
-        RUNTIME DESTINATION bin)
-    install(FILES ${HEADERS}
-        DESTINATION include/neyson)
-    install(EXPORT neysonConfig
-        NAMESPACE neyson::
-        DESTINATION lib/cmake/neyson)
-    export(TARGETS neyson
-        NAMESPACE neyson::
-        FILE "${PROJECT_BINARY_DIR}/neysonConfig.cmake")
-endif()
-
+#---------------------------------------------------------------------
+# Add the tests target if enabled
+#---------------------------------------------------------------------
 if(NEYSON_BUILD_TESTS)
-    add_executable(tests "test/main.cpp")
-    target_link_libraries(tests neyson)
+    file(GLOB TESTS_SOURCES test/*)
+    add_executable(tests ${TESTS_SOURCES})
+    target_link_libraries(tests PUBLIC neyson)
 endif()
+
+#---------------------------------------------------------------------
+# Installation Rules
+#---------------------------------------------------------------------
+include(GNUInstallDirs)
+install(TARGETS neyson
+  EXPORT neysonTargets
+  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+  INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+)
+# Install public headers from the source directory
+install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/src/neyson"
+  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+  FILES_MATCHING PATTERN "*.h"
+)
+# Install the generated config.h header separately
+install(FILES "${CMAKE_CURRENT_BINARY_DIR}/gen/neyson/config.h"
+  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/neyson
+)
+# Export the library target for downstream use
+install(EXPORT neysonTargets
+  FILE neysonTargets.cmake
+  NAMESPACE neyson::
+  DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/neyson
+)

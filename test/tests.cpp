@@ -28,28 +28,22 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#pragma once
+#include "tests.h"
 
-#include <neyson/value.h>
+#include "value.h"
 //
-#include <neyson/json.h>
-#include <neyson/sqlite.h>
-#include <neyson/xml.h>
+#include "json.h"
+//
+#include "xml.h"
+//
+#include "sqlite.h"
 
-namespace Neyson
+int main()
 {
-template <typename T>
-void print(T &&value)
-{
-    std::cout << value << " " << std::endl;
+    // srand(static_cast<unsigned int>(time(nullptr)));
+    std::cout << SEPARATOR << "Running Tests..." << std::endl << SEPARATOR;
+    for (const auto &test : TestList) test();
+    if (Code == 0) std::cout << GREEN << "All Tests Succeeded!" << CLEAR << std::endl << SEPARATOR;
+    if (Code != 0) std::cout << RED << "Some Tests Failed!" << CLEAR << std::endl << SEPARATOR;
+    return Code;
 }
-template <typename Head, typename... Tail>
-void print(Head &&head, Tail &&...tail)
-{
-    std::cout << head << " ";
-    print(std::forward<Tail>(tail)...);
-}
-inline void print() { std::cout << std::endl; }
-}  // namespace Neyson
-
-#undef NEYSON_ASSERT

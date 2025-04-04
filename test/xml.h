@@ -30,26 +30,29 @@
 
 #pragma once
 
-#include <neyson/value.h>
-//
-#include <neyson/json.h>
-#include <neyson/sqlite.h>
-#include <neyson/xml.h>
+#include "tests.h"
 
-namespace Neyson
+TEST(Xml, Random)
 {
-template <typename T>
-void print(T &&value)
-{
-    std::cout << value << " " << std::endl;
-}
-template <typename Head, typename... Tail>
-void print(Head &&head, Tail &&...tail)
-{
-    std::cout << head << " ";
-    print(std::forward<Tail>(tail)...);
-}
-inline void print() { std::cout << std::endl; }
-}  // namespace Neyson
+    for (size_t i = 0; i < 1000; ++i)
+    {
+        XML::Nodes nodes1 = randnode(), nodes2;
+        std::string text;
+        EXPECT_TRUE(XML::write(nodes1, text));
+        EXPECT_TRUE(XML::read(nodes2, text, XML::Parse::FullTrimmed));
 
-#undef NEYSON_ASSERT
+        if (!(nodes1 == nodes2))
+        {
+            for (size_t i = 0; i < nodes1.size(); ++i)
+                if (!(nodes1[i] == nodes2[i]))
+                {
+                    print("Node 1");
+                    print(nodes1[i]);
+                    print("Node 2");
+                    print(nodes2[i]);
+                }
+        }
+
+        EXPECT_TRUE(nodes1 == nodes2);
+    }
+}
