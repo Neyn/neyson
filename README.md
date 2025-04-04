@@ -14,11 +14,7 @@
   - [CMake Submodule](#cmake-submodule)
     - [1. Installed Package](#1-installed-package)
     - [2. Add as a Subdirectory](#2-add-as-a-subdirectory)
-  - [Usage](#usage)
-    - [1. Value Class](#1-value-class)
-    - [2. JSON](#2-json)
-    - [3. XML](#3-xml)
-    - [4. SQLite (Optional)](#4-sqlite-optional)
+  - [Usage and Documentation](#usage-and-documentation)
   - [Tests](#tests)
   - [Contributing](#contributing)
   - [License](#license)
@@ -115,62 +111,9 @@ target_link_libraries(myexec neyson::neyson)
 
 Adjust paths as needed. This approach keeps dependencies self-contained.
 
-## Usage
+## Usage and Documentation
 
-Neyson’s APIs are documented comprehensively in the code (with optional Doxygen integration) and in usage tutorials. Below is an overview of each module:
-
-### 1. Value Class
-
-This library revolves around (or makes use of) the core **Value** class. It can represent none, booleans, integers, floating-point numbers, strings, arrays, and objects.
-
-**Key functionalities:**
-
-- Type checking (`isbool()`, `isint()`, `isreal()`, etc.)
-- Getter/setter methods (`boolean()`, `integer()`, `string()`, `array()`, etc.)
-- Operator indexing for arrays and objects (e.g., `value[0]`, `value["key"]`)
-- Conversions to fundamental C++ types
-
-Refer to the **Value Usage Tutorial** for a deep dive into constructing and manipulating **Value** objects.
-
-### 2. JSON
-
-The JSON module lives in the `Neyson::Json` namespace and provides:
-
-- **read / sread / fread** to parse JSON from strings, C-strings, or files
-- **write / fwrite** to serialize a **Value** to strings, files, or streams
-- Detailed error reporting with the **Json::Result** structure
-
-See the **JSON Usage Tutorial** for examples on:
-- Reading JSON from various sources
-- Writing JSON in compact or pretty-printed mode
-- Handling parse/write errors
-
-### 3. XML
-
-The XML module is under `Neyson::XML` and offers:
-
-- **read / sread / fread** to parse XML (with optional trimming modes)
-- **write / fwrite** to produce compact or readable XML
-- A **Node** class to represent elements, attributes, comments, CDATA, etc.
-
-See the **XML Usage Tutorial** for:
-- Constructing and traversing XML nodes
-- Attribute management
-- Handling advanced node types like declarations and comments
-
-### 4. SQLite (Optional)
-
-If compiled with SQLite support (`NEYSON_ENABLE_SQLITE=ON`), you gain:
-
-- A **Database** class to open, query, and manage a connection
-- **Statement** objects for prepared queries, parameter binding, row iteration
-- **Transaction** to handle atomic commits and rollbacks
-- **Backup** to copy data between databases
-
-Check out the **SQLite Usage Tutorial** for detailed information on:
-- Opening a database
-- Executing statements (queries, inserts, etc.)
-- Transactions and backups
+The documentation is available [here](https://neyson.readthedocs.io/en/latest/).
 
 ## Tests
 
